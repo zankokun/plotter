@@ -2,11 +2,10 @@
 #include <iostream>
 using namespace sciplot;
 
-int main(int argc, char** argv)
+int main()
 {
     // Create a vector with values from 0 to pi divived into 200 uniform intervals for the x-axis
-    Vec x = linspace(0.0, PI, 200);
-
+    Vec x = linspace(0.0, PI, 1200);
     // Create a Plot object
     Plot2D plot;
 
@@ -32,6 +31,8 @@ int main(int argc, char** argv)
     plot.drawCurve(x, std::sin(5.0 * x)).label("sin(5x)");
     plot.drawCurve(x, std::sin(6.0 * x)).label("sin(6x)");
 
+
+
     // Create figure to hold plot
     Figure fig = {{plot}};
     // Create canvas to hold figure
@@ -40,6 +41,8 @@ int main(int argc, char** argv)
     // Show the plot in a pop-up window
     canvas.show();
 
-    // Save the plot to a PDF file
-    canvas.save("example-sine-functions.pdf");
+    char key;
+    while(std::cin >> key) {
+        if(key=='w') main();
+    }
 }
