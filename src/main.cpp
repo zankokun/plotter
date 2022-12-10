@@ -2,47 +2,55 @@
 #include <iostream>
 using namespace sciplot;
 
-int main()
-{
-    // Create a vector with values from 0 to pi divived into 200 uniform intervals for the x-axis
-    Vec x = linspace(0.0, PI, 1200);
+struct Curve {
+    Vec x;
+    Vec y;
+    std::string name;
+};
+
+void draw(const Curve& curve) {
     // Create a Plot object
     Plot2D plot;
 
     // Set the x and y labels
     plot.xlabel("x");
     plot.ylabel("y");
-
     // Set the x and y ranges
-    plot.xrange(0.0, PI);
-    plot.yrange(0.0, 1.0);
-
+    plot.xrange(0.0, curve.x.max());
+    plot.yrange(0.0, curve.y.max());
+    
     // Set the legend to be on the bottom along the horizontal
     plot.legend()
         .atOutsideBottom()
         .displayHorizontal()
         .displayExpandWidthBy(2);
 
-    // Plot sin(i*x) from i = 1 to i = 6
-    plot.drawCurve(x, std::sin(1.0 * x)).label("sin(x)");
-    plot.drawCurve(x, std::sin(2.0 * x)).label("sin(2x)");
-    plot.drawCurve(x, std::sin(3.0 * x)).label("sin(3x)");
-    plot.drawCurve(x, std::sin(4.0 * x)).label("sin(4x)");
-    plot.drawCurve(x, std::sin(5.0 * x)).label("sin(5x)");
-    plot.drawCurve(x, std::sin(6.0 * x)).label("sin(6x)");
-
-
+    plot.drawCurve(curve.x, curve.y).label(curve.name);
+    plot.drawCurveWithPoints(curve.x, curve.y).label(curve.name);
 
     // Create figure to hold plot
-    Figure fig = {{plot}};
+    Figure fig = { {plot} };
     // Create canvas to hold figure
-    Canvas canvas = {{fig}};
-
-    // Show the plot in a pop-up window
+    Canvas canvas = { {fig} };
+    canvas.title("2123132");
+    canvas.fontSize(14);
+    canvas.size(800, 600);
     canvas.show();
+}
 
+int main()
+{
+
+
+    auto  c = Curve{ {1,2,3,4,5,6,7,8}, {1,8,27,3,4,5,6,1}, "a[[a[a[" };
+    draw(c);
     char key;
     while(std::cin >> key) {
-        if(key=='w') main();
+        if (key == 'c') {
+            //canvas.close();
+        }
+        if (key == 'q') {
+            return 0;
+        }
     }
 }
