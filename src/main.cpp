@@ -24,9 +24,7 @@ struct Drawer
         Plot2D plot;
         plot.xlabel("x");
         plot.ylabel("y");
-        plot.legend().atOutsideRight()
-            .displayVertical()
-            .displayExpandHeightBy(2);
+        plot.legend().atOutsideRight().displayVertical().displayExpandHeightBy(2);
         drawFunctions(plot);
         Figure fig = {{plot}};
         Canvas canvas = {{fig}};
@@ -283,7 +281,8 @@ void approx()
             {
                 if (sums[k][k] == 0)
                 {
-                    std::wcout << L"\nНет решений матрицы!\n" << std::endl;
+                    std::wcout << L"\nНет решений матрицы!\n"
+                               << std::endl;
                     return;
                 }
                 double M = sums[i][k] / sums[k][k];
@@ -440,6 +439,8 @@ void diff()
     std::vector<double> leftx;
     std::vector<double> centrey;
     std::vector<double> centrex;
+    std::vector<double> diff2y;
+    std::vector<double> diff2x;
 
     for (size_t i = 0; i < X.size() - 1; i++)
     {
@@ -459,18 +460,77 @@ void diff()
         centrey.push_back(temp);
         centrex.push_back(X[i]);
     }
-    Drawer d{
-        [&](Plot2D &plot)
-        {
-            plot.drawCurve(X, Y).label("Оригинальная функция");
-            plot.drawCurve(rightx, righty).label("Правый");
-            plot.drawCurve(leftx, lefty).label("Левый");
-            plot.drawCurve(centrex, centrey).label("Центральный");
-        },
-        [](Canvas &canvas) {
 
-        }};
-    d.draw();
+    for (size_t i = 2; i < X.size() - 2; i++)
+    {
+        auto k = i/2;
+        double temp = (centrey[k + 1] - 2 * centrey[k] + centrey[k - 1]) / ((2 * delta * 2) * (2 * delta * 2));
+        diff2y.push_back(temp);
+        diff2x.push_back(X[i]);
+    }
+
+    {
+        Drawer d{
+            [&](Plot2D &plot)
+            {
+                plot.drawCurve(rightx, righty).label("Разностное отношение вперёд");
+            },
+            [](Canvas &canvas)
+            {
+                canvas.title("Разностное отношение вперёд");
+            }};
+        d.draw();
+    }
+    {
+        Drawer d{
+            [&](Plot2D &plot)
+            {
+                plot.drawCurve(leftx, lefty).label("Разностное отношение назад");
+            },
+            [](Canvas &canvas)
+            {
+                canvas.title("Разностное отношение назад");
+            }};
+        d.draw();
+    }
+    {
+        Drawer d{
+            [&](Plot2D &plot)
+            {
+                plot.drawCurve(centrex, centrey).label("Центральное разностное отношение");
+            },
+            [](Canvas &canvas)
+            {
+                canvas.title("Центральное разностное отношение");
+            }};
+        d.draw();
+    }
+    {
+        Drawer d{
+            [&](Plot2D &plot)
+            {
+                plot.drawCurve(diff2x, diff2y).label("Вторая производная");
+            },
+            [](Canvas &canvas)
+            {
+                canvas.title("Вторая производная");
+            }};
+        d.draw();
+    }
+    {
+        Drawer d{
+            [&](Plot2D &plot)
+            {
+                plot.drawCurve(rightx, righty).label("Разностное отношение вперёд");
+                plot.drawCurve(leftx, lefty).label("Разностное отношение назад");
+                plot.drawCurve(centrex, centrey).label("Центральное разностное отношение");
+            },
+            [](Canvas &canvas)
+            {
+                canvas.title("Сравнение разностных отношений");
+            }};
+        d.draw();
+    }
 }
 int main()
 {
