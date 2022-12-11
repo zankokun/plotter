@@ -37,172 +37,310 @@ struct Drawer
     }
 };
 
-
-void origin(){
+void origin()
+{
     Drawer d{
-        [](Plot2D &plot){
-            plot.drawCurve(X,Y).label("Оригинальный график");
+        [](Plot2D &plot)
+        {
+            plot.drawCurve(X, Y).label("Оригинальный график");
         },
-        [](Canvas &canvas){
+        [](Canvas &canvas)
+        {
             canvas.title("График по точкам");
-        }
-    };
+        }};
     d.draw();
 }
 
-double divided_differences(std::vector<double> x_values,std::vector<double> y_values, size_t k)
+double divided_differences(std::vector<double> x_values, std::vector<double> y_values, size_t k)
 {
     double result = 0.f;
-    for (size_t j=0; j<k + 1; j++){
+    for (size_t j = 0; j < k + 1; j++)
+    {
         double mul = 1.f;
-        for (size_t i=0; i < k + 1; i++){
-            if (i != j){
+        for (size_t i = 0; i < k + 1; i++)
+        {
+            if (i != j)
+            {
                 mul *= x_values[j] - x_values[i];
             }
         }
-        result += y_values[j]/mul;
+        result += y_values[j] / mul;
     }
     return result;
 }
 
-auto create_Newton_polynomial(std::vector<double> x_values, std::vector<double> y_values){
+auto create_Newton_polynomial(std::vector<double> x_values, std::vector<double> y_values)
+{
     std::vector<double> div_diff;
-    for(size_t i=1; i< x_values.size(); i++){
+    for (size_t i = 1; i < x_values.size(); i++)
+    {
         div_diff.push_back(divided_differences(x_values, y_values, i));
     }
-    auto resultFunc = [div_diff, x_values, y_values](double x){
+    auto resultFunc = [div_diff, x_values, y_values](double x)
+    {
         double result = y_values[0];
-        for(size_t k=1; k<y_values.size(); k++){
+        for (size_t k = 1; k < y_values.size(); k++)
+        {
             double mul = 1.f;
-            for(size_t j=0; j<k; j++){
-                mul *= x-x_values[j];
+            for (size_t j = 0; j < k; j++)
+            {
+                mul *= x - x_values[j];
             }
-            result += div_diff[k-1]*mul;
+            result += div_diff[k - 1] * mul;
         }
         return result;
     };
     return resultFunc;
 }
 
-void newton(size_t k){
+void newton(size_t k)
+{
     std::vector<double> x_values;
     std::vector<double> y_values;
-    if(k==3){
-        x_values = {X.front(),X[90], X.back()};
-        y_values = {Y.front(),Y[90],  Y.back()};
+    if (k == 3)
+    {
+        x_values = {X.front(), X[90], X.back()};
+        y_values = {Y.front(), Y[90], Y.back()};
     }
-    if (k==5){
-        x_values =  {X.front(),X[50], X[100], X[150],X.back()};
-        y_values = {Y.front(),Y[50], Y[100], Y[150], Y.back()};
+    if (k == 5)
+    {
+        x_values = {X.front(), X[50], X[100], X[150], X.back()};
+        y_values = {Y.front(), Y[50], Y[100], Y[150], Y.back()};
     }
-    if (k==8){
-        x_values =  {X.front(),X[25], X[50], X[75], X[100], X[125], X[150],X.back()};
-        y_values = {Y.front(),Y[25], Y[50], Y[75],  Y[100], Y[125], Y[150], Y.back()};
+    if (k == 8)
+    {
+        x_values = {X.front(), X[25], X[50], X[75], X[100], X[125], X[150], X.back()};
+        y_values = {Y.front(), Y[25], Y[50], Y[75], Y[100], Y[125], Y[150], Y.back()};
     }
     auto newtonFunc = create_Newton_polynomial(x_values, y_values);
     std::vector<double> new_Y;
-    for(auto x: X){
+    for (auto x : X)
+    {
         new_Y.push_back(newtonFunc(x));
     }
 
     Drawer d{
-        [new_Y](Plot2D &plot){
-            plot.drawCurve(X,Y).label("Оригинальная функция");
+        [new_Y](Plot2D &plot)
+        {
+            plot.drawCurve(X, Y).label("Оригинальная функция");
             plot.drawCurve(X, new_Y).label("Интерполяция Ньютона");
         },
-        [](Canvas &canvas){
+        [](Canvas &canvas) {
 
-        }
-    };
+        }};
     d.draw();
 }
 
-auto create_basic_polynomial(std::vector<double> x_values, size_t i){
-    return [x_values,i](double x){
+auto create_basic_polynomial(std::vector<double> x_values, size_t i)
+{
+    return [x_values, i](double x)
+    {
         double divider = 1.f;
         double result = 1.f;
-        for (size_t j=0; j < x_values.size(); j++){
-            if (j != i){
-                result *= x-x_values[j];
-                divider *= x_values[i]-x_values[j];
+        for (size_t j = 0; j < x_values.size(); j++)
+        {
+            if (j != i)
+            {
+                result *= x - x_values[j];
+                divider *= x_values[i] - x_values[j];
             }
         }
-        return result/divider;
+        return result / divider;
     };
 }
 
-auto create_Lagrange_polynomial(std::vector<double> x_values, std::vector<double> y_values){
-    std::vector<std::function<double(double x)> > basic_polynomials{};
-    for(size_t i=0; i<x_values.size(); i++){
+auto create_Lagrange_polynomial(std::vector<double> x_values, std::vector<double> y_values)
+{
+    std::vector<std::function<double(double x)>> basic_polynomials{};
+    for (size_t i = 0; i < x_values.size(); i++)
+    {
         basic_polynomials.push_back(create_basic_polynomial(x_values, i));
     }
 
-    return [y_values, basic_polynomials](double x){
+    return [y_values, basic_polynomials](double x)
+    {
         double result = 0.f;
-        for (size_t i=0; i<y_values.size(); i++){
-            result += y_values[i]*basic_polynomials[i](x);
+        for (size_t i = 0; i < y_values.size(); i++)
+        {
+            result += y_values[i] * basic_polynomials[i](x);
         }
         return result;
     };
 }
 
-void lagranzh(size_t k){
+void lagranzh(size_t k)
+{
     std::vector<double> x_values;
     std::vector<double> y_values;
-    if(k==3){
-        x_values = {X.front(),X[90], X.back()};
-        y_values = {Y.front(),Y[90],  Y.back()};
+    if (k == 3)
+    {
+        x_values = {X.front(), X[90], X.back()};
+        y_values = {Y.front(), Y[90], Y.back()};
     }
-    if (k==5){
-        x_values =  {X.front(),X[50], X[100], X[150],X.back()};
-        y_values = {Y.front(),Y[50], Y[100], Y[150], Y.back()};
+    if (k == 5)
+    {
+        x_values = {X.front(), X[50], X[100], X[150], X.back()};
+        y_values = {Y.front(), Y[50], Y[100], Y[150], Y.back()};
     }
-    if (k==8){
-        x_values =  {X.front(),X[25], X[50], X[75], X[100], X[125], X[150],X.back()};
-        y_values = {Y.front(),Y[25], Y[50], Y[75],  Y[100], Y[125], Y[150], Y.back()};
+    if (k == 8)
+    {
+        x_values = {X.front(), X[25], X[50], X[75], X[100], X[125], X[150], X.back()};
+        y_values = {Y.front(), Y[25], Y[50], Y[75], Y[100], Y[125], Y[150], Y.back()};
     }
     auto larganzhFunc = create_Lagrange_polynomial(x_values, y_values);
     std::vector<double> new_Y;
-    for(auto x: X){
+    for (auto x : X)
+    {
         new_Y.push_back(larganzhFunc(x));
     }
 
     Drawer d{
-        [new_Y](Plot2D &plot){
-            plot.drawCurve(X,Y).label("Оригинальная функция");
+        [new_Y](Plot2D &plot)
+        {
+            plot.drawCurve(X, Y).label("Оригинальная функция");
             plot.drawCurve(X, new_Y).label("Интерполяция Лагранжа");
         },
-        [](Canvas &canvas){
+        [](Canvas &canvas) {
 
-        }
-    };
+        }};
     d.draw();
 }
 
+void approx()
+{
+    std::vector<double> a, b, x, y;
+    std::vector<std::vector<double>> sums;
+    int N = 10, K = 3;
+    {
+        // allocate memory for matrixes
+        a = std::vector<double>(K + 1, 0);
+        b = std::vector<double>(K + 1, 0);
+        x = std::vector<double>(N, 0);
+        y = std::vector<double>(N, 0);
+        sums = std::vector<std::vector<double>>(K + 1, std::vector<double>(K + 1, 0));
+    }
+    {
+        int i = 0, j = 0, k = 0;
+        // read x, y matrixes from input file
+        for (k = 0; k < N; k++)
+        {
+            x[k] = X[((x.size()) / N) * k];
+            y[k] = Y[((x.size()) / N) * k];
+        }
+        // init square sums matrix
+        for (i = 0; i < K + 1; i++)
+        {
+            for (j = 0; j < K + 1; j++)
+            {
+                sums[i][j] = 0;
+                for (k = 0; k < N; k++)
+                {
+                    sums[i][j] += powl(x[k], i + j);
+                }
+            }
+        }
+        // init free coefficients column
+        for (i = 0; i < K + 1; i++)
+        {
+            for (k = 0; k < N; k++)
+            {
+                b[i] += powl(x[k], i) * y[k];
+            }
+        }
+    }
 
+    {
+        int i, j, k;
+        double temp = 0;
+        for (i = 0; i < K + 1; i++)
+        {
+            if (sums[i][i] == 0)
+            {
+                for (j = 0; j < K + 1; j++)
+                {
+                    if (j == i)
+                        continue;
+                    if (sums[j][i] != 0 && sums[i][j] != 0)
+                    {
+                        for (k = 0; k < K + 1; k++)
+                        {
+                            temp = sums[j][k];
+                            sums[j][k] = sums[i][k];
+                            sums[i][k] = temp;
+                        }
+                        temp = b[j];
+                        b[j] = b[i];
+                        b[i] = temp;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    {
+        int i = 0, j = 0, k = 0;
+        // process rows
+        for (k = 0; k < K + 1; k++)
+        {
+            for (i = k + 1; i < K + 1; i++)
+            {
+                if (sums[k][k] == 0)
+                {
+                    printf("\nSolution is not exist.\n");
+                    return;
+                }
+                double M = sums[i][k] / sums[k][k];
+                for (j = k; j < K + 1; j++)
+                {
+                    sums[i][j] -= M * sums[k][j];
+                }
+                b[i] -= M * b[k];
+            }
+        }
 
+        for (i = (K + 1) - 1; i >= 0; i--)
+        {
+            double s = 0;
+            for (j = i; j < K + 1; j++)
+            {
+                s = s + sums[i][j] * a[j];
+            }
+            a[i] = (b[i] - s) / sums[i][i];
+        }
+    }
+}
 
 int main()
 {
-    //#if defined(_WIN32) || defined(_WIN64)
-    setlocale(LC_CTYPE,"Russian");
-    //#endif
+    // #if defined(_WIN32) || defined(_WIN64)
+    //setlocale(LC_ALL, "Russian");
+    // #endif
 
     std::string input;
     std::map<std::string, std::pair<std::string, std::function<void(void)>>> menu = {
-        {{"O"},  {"Оригинальная функция", [](){ origin();}}},
-        {{"L3"}, {"Интерполяция Лагранжа по 3 точкам", [](){ lagranzh(3);}}},
-        {{"L5"}, {"Интерполяция Лагранжа по 5 точкам", [](){ lagranzh(5);}}},
-        {{"L8"}, {"Интерполяция Лагранжа по 8 точкам", [](){ lagranzh(8);}}},
-        {{"N3"}, {"Интерполяция Ньютона по 3 точкам", [](){ newton(3);}}},
-        {{"N5"}, {"Интерполяция Ньютона по 3 точкам", [](){ newton(5);}}},
-        {{"N8"}, {"Интерполяция Ньютона по 3 точкам", [](){ newton(8);}}},
+        {{"O"}, {"Оригинальная функция", []()
+                 { origin(); }}},
+        {{"A"}, {"Аппроксимация методом наименьших квадратов", []()
+                 { approx(); }}},
+        {{"L3"}, {"Интерполяция Лагранжа по 3 точкам", []()
+                  { lagranzh(3); }}},
+        {{"L5"}, {"Интерполяция Лагранжа по 5 точкам", []()
+                  { lagranzh(5); }}},
+        {{"L8"}, {"Интерполяция Лагранжа по 8 точкам", []()
+                  { lagranzh(8); }}},
+        {{"N3"}, {"Интерполяция Ньютона по 3 точкам", []()
+                  { newton(3); }}},
+        {{"N5"}, {"Интерполяция Ньютона по 5 точкам", []()
+                  { newton(5); }}},
+        {{"N8"}, {"Интерполяция Ньютона по 8 точкам", []()
+                  { newton(8); }}},
         //{}
     };
-    for(;;)
+    for (;;)
     {
-        for(auto& [cmd, value]:menu){
-            std::cout  << cmd << ": " << value.first  << std::endl;
+        for (auto &[cmd, value] : menu)
+        {
+            std::cout << cmd << ": " << value.first << std::endl;
         }
         /*if (input == "O"){
             origin();
@@ -229,15 +367,17 @@ int main()
             lagranzh(8);
         }
         */
-        std::getline(std::cin,input);
-        if (menu[input].first.size()>0){
+        std::getline(std::cin, input);
+        if (menu[input].first.size() > 0)
+        {
             menu[input].second();
         }
         else if (input == "q")
         {
             return 0;
         }
-        else {
+        else
+        {
             std::cout << "Неверная команда!" << std::endl;
         }
     }
