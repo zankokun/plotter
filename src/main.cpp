@@ -536,8 +536,9 @@ int main()
 {
 #if defined(_WIN32) || defined(_WIN64)
     setlocale(LC_ALL, "Russian");
+#else
+    setlocale(LC_ALL, "en_US.utf8");
 #endif
-
     std::wstring input;
     std::map<std::wstring, std::pair<std::wstring, std::function<void(void)>>> menu = {
         {{L"O"}, {L"Оригинальная функция", []()
