@@ -2,6 +2,8 @@
 #include <clocale>
 #include <cmath>
 #include <vector>
+#include <numeric>
+#include <algorithm>
 
 #include "sciplot/Plot2D.hpp"
 #include "sciplot/sciplot.hpp"
@@ -212,9 +214,9 @@ void approx(size_t K)
     std::vector<double> a, b, x, y;
     std::vector<std::vector<double>> sums;
 
-    x = {X.front(), X[25], X[50], X[75],X[85], X[100], X[125],X[135],X[145], X[150],X[165],X[175], X.back()};
-    y = {Y.front(), Y[25], Y[50], Y[75],Y[85], Y[100], Y[125],Y[135],Y[145], Y[150],Y[165],Y[175], Y.back()};
-    int N = x.size();
+    x = {X.front(), X[25], X[50], X[75], X[85], X[100], X[125], X[135], X[145], X[150], X[165], X[175], X.back()};
+    y = {Y.front(), Y[25], Y[50], Y[75], Y[85], Y[100], Y[125], Y[135], Y[145], Y[150], Y[165], Y[175], Y.back()};
+    size_t N = x.size();
     {
         // allocate memory for matrixes
         a = std::vector<double>(K + 1, 0);
@@ -222,7 +224,7 @@ void approx(size_t K)
         sums = std::vector<std::vector<double>>(K + 1, std::vector<double>(K + 1, 0));
     }
     {
-        int i = 0, j = 0, k = 0;
+        size_t i = 0, j = 0, k = 0;
         // init square sums matrix
         for (i = 0; i < K + 1; i++)
         {
@@ -231,7 +233,7 @@ void approx(size_t K)
                 sums[i][j] = 0;
                 for (k = 0; k < N; k++)
                 {
-                    sums[i][j] += powl(x[k], i + j);
+                    sums[i][j] += powl(x[k], static_cast<long double>(i + j));
                 }
             }
         }
@@ -240,13 +242,13 @@ void approx(size_t K)
         {
             for (k = 0; k < N; k++)
             {
-                b[i] += powl(x[k], i) * y[k];
+                b[i] += powl(x[k], static_cast<long double>(i)) * y[k];
             }
         }
     }
 
     {
-        int i, j, k;
+        size_t i, j, k;
         double temp = 0;
         for (i = 0; i < K + 1; i++)
         {
@@ -274,7 +276,7 @@ void approx(size_t K)
         }
     }
     {
-        int i = 0, j = 0, k = 0;
+        size_t i = 0, j = 0, k = 0;
         // process rows
         for (k = 0; k < K + 1; k++)
         {
@@ -305,23 +307,24 @@ void approx(size_t K)
         }
     }
 
-    double error2=0.f;
+    double error2 = 0.f;
     std::vector<double> new_Y;
-    for (size_t i=0; i<X.size(); i++)
+    for (size_t i = 0; i < X.size(); i++)
     {
         auto x = X[i];
         auto y = Y[i];
-        //a[0] + a[1] * x + a[2] * x * x+a[3]*x*x*x
-        double new_y=1.f, pow_x=1.f;
-        for(size_t i=0;i<=K; i++){
-            new_y += a[i]*pow_x;
-            pow_x *=x;
+        // a[0] + a[1] * x + a[2] * x * x+a[3]*x*x*x
+        double new_y = 1.f, pow_x = 1.f;
+        for (size_t i = 0; i <= K; i++)
+        {
+            new_y += a[i] * pow_x;
+            pow_x *= x;
         }
         new_Y.push_back(new_y);
-        error2+=(new_y-y)*(new_y-y);
+        error2 += (new_y - y) * (new_y - y);
     }
 
-    double error = sqrtl(error2/static_cast<double>(X.size()-1));
+    double error = sqrtl(error2 / static_cast<double>(X.size() - 1));
     std::wcout << L"Среднеквадратическое отклонение равно: " << error << std::endl;
 
     Drawer d{
@@ -477,7 +480,7 @@ void diff()
 
     for (size_t i = 2; i < X.size() - 2; i++)
     {
-        auto k = i/2;
+        auto k = i / 2;
         double temp = (centrey[k + 1] - 2 * centrey[k] + centrey[k - 1]) / ((2 * delta * 2) * (2 * delta * 2));
         diff2y.push_back(temp);
         diff2x.push_back(X[i]);
@@ -546,27 +549,124 @@ void diff()
         d.draw();
     }
 }
+
+void integration()
+{
+    double h = 1.f;
+    size_t n = Y.size() - 1;
+
+    double ff = std::accumulate(Y.begin(), Y.end(), static_cast<long double>(0));
+    double k1 = Y.front();
+    double k2 = Y.back();
+    double left = h * (ff - k2);
+
+    std::wcout << L"Метод левых прямоугольников:\t" << left << std::endl;
+
+    double right = h * (ff - k1);
+    std::wcout << L"метод правых прямоугольников:\t" << right << std::endl;
+
+    std::vector<double> dx{};
+    for (size_t i = 1; i < n - 1; i++)
+    {
+        dx.push_back((Y[i + 1] - Y[i - 1]) / h);
+    }
+    std::transform(dx.begin(), dx.end(),
+                   dx.begin(), // write to the same location
+                   [](double d)
+                   { return d > 0 ? d : d * -1.f; });
+    auto mm = std::max_element(dx.begin(), dx.end());
+    auto pogrechnost = *mm * (h * h * (n - 1) / 2);
+
+    std::wcout << L"Абсолютная погрешность метода левых и правых прямоугольников:\t" << pogrechnost << std::endl;
+
+    double h4 = 1.f;
+    // метод центральных прямоугольников
+    double summ = 0.f;
+    for (size_t i = 0; i < n - 3; i++)
+    {
+        summ = summ + Y[(i + 2 + i) / 2];
+    }
+    auto sredn = h4 * summ + Y[n - 1] * 2;
+    std::wcout << L"метод центральных прямоугольников:\t" << sredn << std::endl;
+
+    std::vector<double> dx2{};
+    for (size_t i = 3; i < n - 2; i++)
+    {
+        //% вторая производная
+        auto k = i / 2;
+        dx2.push_back((dx[k + 1] - 2 * dx[k] + dx[k - 1]) / ((2 * h) * (2 * h)));
+    }
+    std::transform(dx2.begin(), dx2.end(),
+                   dx2.begin(), // write to the same location
+                   [](double d)
+                   { return d > 0 ? d : d * -1.f; });
+    auto mm2 = std::max_element(dx2.begin(), dx2.end());
+
+    auto pogrechnost2 = *mm2 * (h * h * h * (n - 1) / 24);
+    //% погрешность метода
+    std::wcout << L"Абсолютная погрешность метода средних прямоугольников:\t" << pogrechnost2 << std::endl;
+
+    /*
+    trap = h * ((k1 + k2) / 2 + (ff - (k1 + k2)));
+    % метод трапеции
+            std::wcout << L("метод трапеции");
+    std::wcout << L(trap << std::endl;
+    pogrechnost3 = mm2 * (h ^ 3 * (n - 1) / 12);
+    % погрешность метода
+            std::wcout << L("Абсолютная погрешность метода трапеции:");
+    std::wcout << L(pogrechnost3 << std::endl;
+
+    summ1 = 0;
+    % вычисление сумм для метода Симпсона
+            summ2 = 0;
+    for (i = 3 : 2 : n - 3)
+        summ1 = summ1 + y(i);
+    end for (i = 4 : 2 : n - 2)
+        summ2 = summ2 + y(i);
+    end
+        h3 = h / 3;
+    simpson = h3 * (k1 + k2 + 4 * summ1 + 2 * summ2);
+    % метод Симпсона
+            std::wcout << L("метод Симпсона");
+    std::wcout << L(simpson << std::endl;
+    for (i = 3 : 1 : n - 2)
+        dx4(i) = y(i - 2) - 4 * y(i - 1) + 6 * y(i) - 4 * y(i - 1) - y(i - 2) / (h ^ 4);
+    end
+        mm4 = max(abs(dx4));
+    a = (n - 1) * h;
+    pogrechnost4 = (mm4 * (a) ^ 5) / (2880 * (n - 1) ^ 4);
+    % погрешность метода
+            std::wcout << L("Абсолютная погрешность метода Симпсона:");
+    std::wcout << L(pogrechnost4 << std::endl;
+    */
+}
+
 int main()
 {
-#if defined(_WIN32) || defined(_WIN64)
-    setlocale(LC_ALL, "Russian");
+#ifdef _MSC_VER
+    setlocale(LC_ALL, "RUS");
 #else
     setlocale(LC_ALL, "en_US.utf8");
 #endif
+    std::system("chcp 1251");
+    std::wcout << L"Начало" << std::endl;
+
     std::wstring input;
     std::map<std::wstring, std::pair<std::wstring, std::function<void(void)>>> menu = {
         {{L"O"}, {L"Оригинальная функция", []()
                   { origin(); }}},
         {{L"A2"}, {L"Аппроксимация методом наименьших квадратов для параболы", []()
-                  { approx(2); }}},
+                   { approx(2); }}},
         {{L"A3"}, {L"Аппроксимация методом наименьших квадратов для кубики", []()
-                  { approx(3); }}},
+                   { approx(3); }}},
         {{L"A5"}, {L"Аппроксимация методом наименьших квадратов для полинома пятой степени", []()
-                  { approx(5); }}},
+                   { approx(5); }}},
         {{L"S"}, {L"Аппроксимация Сплайнами", []()
                   { spline(); }}},
         {{L"D"}, {L"Дифференцирование", []()
                   { diff(); }}},
+        {{L"I"}, {L"Интегрирование", []()
+                  { integration(); }}},
         {{L"L3"}, {L"Интерполяция Лагранжа по 3 точкам", []()
                    { lagranzh(3); }}},
         {{L"L5"}, {L"Интерполяция Лагранжа по 5 точкам", []()
@@ -588,7 +688,7 @@ int main()
         std::wcout << L"Ввод:\t Команда" << std::endl;
         for (auto &[cmd, value] : menu)
         {
-            std::wcout << cmd << ":\t " << value.first << std::endl;
+            std::wcout << cmd << L":\t " << value.first << std::endl;
         }
 
         std::getline(std::wcin, input);
