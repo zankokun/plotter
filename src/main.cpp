@@ -24,15 +24,14 @@ struct Drawer
         Plot2D plot;
         plot.xlabel("x");
         plot.ylabel("y");
-        plot.legend()
-            .atOutsideBottom()
-            .displayHorizontal()
-            .displayExpandWidthBy(2);
+        plot.legend().atOutsideRight()
+            .displayVertical()
+            .displayExpandHeightBy(2);
         drawFunctions(plot);
         Figure fig = {{plot}};
         Canvas canvas = {{fig}};
         canvasFunctions(canvas);
-        canvas.size(1200, 800);
+        canvas.size(1200, 720);
         canvas.show();
     }
 };
@@ -284,7 +283,7 @@ void approx()
             {
                 if (sums[k][k] == 0)
                 {
-                    printf("\nНет решений матрицы!\n");
+                    std::wcout << L"\nНет решений матрицы!\n" << std::endl;
                     return;
                 }
                 double M = sums[i][k] / sums[k][k];
@@ -501,10 +500,13 @@ int main()
                    { newton(5); }}},
         {{L"N8"}, {L"Интерполяция Ньютона по 8 точкам", []()
                    { newton(8); }}},
+        {{L"q"}, {L"Выход", []()
+                  { exit(0); }}},
         //{}
     };
     for (;;)
     {
+        std::wcout << L"Ввод:  Команда" << std::endl;
         for (auto &[cmd, value] : menu)
         {
             std::wcout << cmd << ": " << value.first << std::endl;
@@ -515,13 +517,9 @@ int main()
         {
             menu[input].second();
         }
-        else if (input == L"q")
-        {
-            return 0;
-        }
         else
         {
-            std::cout << "Неверная команда!" << std::endl;
+            std::wcout << L"Неверная команда!" << std::endl;
         }
     }
 }
