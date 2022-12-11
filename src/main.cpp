@@ -644,11 +644,11 @@ void integration()
 int main()
 {
 #ifdef _MSC_VER
-    setlocale(LC_ALL, "RUS");
+    setlocale(LC_ALL, "ru_RU.UTF8");
+    std::system("chcp 1251");
 #else
     setlocale(LC_ALL, "en_US.utf8");
 #endif
-    std::system("chcp 1251");
     std::wcout << L"Начало" << std::endl;
 
     std::wstring input;
