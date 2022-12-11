@@ -32,7 +32,7 @@ struct Drawer
         Figure fig = {{plot}};
         Canvas canvas = {{fig}};
         canvasFunctions(canvas);
-        canvas.size(800, 600);
+        canvas.size(1200, 800);
         canvas.show();
     }
 };
@@ -120,13 +120,15 @@ void newton(size_t k)
     }
 
     Drawer d{
-        [new_Y](Plot2D &plot)
+        [&](Plot2D &plot)
         {
             plot.drawCurve(X, Y).label("Оригинальная функция");
-            plot.drawCurve(X, new_Y).label("Интерполяция Ньютона");
+            plot.drawCurve(X, new_Y).label("Итог Интерполяции");
+            plot.drawPoints(x_values, y_values).label("Точки интерполяции").pointSize(1).pointType(7);
         },
-        [](Canvas &canvas) {
-
+        [](Canvas &canvas)
+        {
+            canvas.title("Интерполяция Ньютона");
         }};
     d.draw();
 }
@@ -195,13 +197,15 @@ void lagranzh(size_t k)
     }
 
     Drawer d{
-        [new_Y](Plot2D &plot)
+        [&](Plot2D &plot)
         {
             plot.drawCurve(X, Y).label("Оригинальная функция");
-            plot.drawCurve(X, new_Y).label("Интерполяция Лагранжа");
+            plot.drawCurve(X, new_Y).label("Итог Интерполяции");
+            plot.drawPoints(x_values, y_values).label("Точки интерполяции").pointSize(1).pointType(7);
         },
-        [](Canvas &canvas) {
-
+        [](Canvas &canvas)
+        {
+            canvas.title("Интерполяция Лагранжа");
         }};
     d.draw();
 }
@@ -211,22 +215,16 @@ void approx()
     std::vector<double> a, b, x, y;
     std::vector<std::vector<double>> sums;
     int N = 8, K = 2;
+    x = {X.front(), X[25], X[50], X[75], X[100], X[125], X[150], X.back()};
+    y = {Y.front(), Y[25], Y[50], Y[75], Y[100], Y[125], Y[150], Y.back()};
     {
         // allocate memory for matrixes
         a = std::vector<double>(K + 1, 0);
         b = std::vector<double>(K + 1, 0);
-        x = std::vector<double>(N, 0);
-        y = std::vector<double>(N, 0);
         sums = std::vector<std::vector<double>>(K + 1, std::vector<double>(K + 1, 0));
     }
     {
         int i = 0, j = 0, k = 0;
-        // read x, y matrixes from input file
-        // for (k = 0; k < N; k++)
-        {
-            x = {X.front(), X[25], X[50], X[75], X[100], X[125], X[150], X.back()};
-            y = {Y.front(), Y[25], Y[50], Y[75], Y[100], Y[125], Y[150], Y.back()};
-        }
         // init square sums matrix
         for (i = 0; i < K + 1; i++)
         {
@@ -286,7 +284,7 @@ void approx()
             {
                 if (sums[k][k] == 0)
                 {
-                    printf("\nSolution is not exist.\n");
+                    printf("\nНет решений матрицы!\n");
                     return;
                 }
                 double M = sums[i][k] / sums[k][k];
@@ -315,13 +313,14 @@ void approx()
     }
 
     Drawer d{
-        [new_Y](Plot2D &plot)
+        [&](Plot2D &plot)
         {
             plot.drawCurve(X, Y).label("Оригинальная функция");
-            plot.drawCurve(X, new_Y).label("Аппроксимация методом наименьших квадратов");
+            plot.drawCurve(X, new_Y).label("Итог Аппроксимации");
         },
-        [](Canvas &canvas) {
-
+        [](Canvas &canvas)
+        {
+            canvas.title("Аппроксимация методом наименьших квадратов");
         }};
     d.draw();
 }
@@ -412,7 +411,6 @@ void spline()
 
     auto spline = buildSpline(x_values, y_values, x_values.size());
 
-
     auto larganzhFunc = create_Lagrange_polynomial(x_values, y_values);
     std::vector<double> new_Y;
     for (auto x : X)
@@ -421,19 +419,22 @@ void spline()
     }
 
     Drawer d{
-        [new_Y](Plot2D &plot)
+        [&](Plot2D &plot)
         {
             plot.drawCurve(X, Y).label("Оригинальная функция");
-            plot.drawCurve(X, new_Y).label("Интерполяция Сплайнами");
+            plot.drawCurve(X, new_Y).label("Итог Интерполяции");
+            plot.drawPoints(x_values, y_values).label("Точки интерполяции").pointSize(1).pointType(7);
         },
-        [](Canvas &canvas) {
-
+        [](Canvas &canvas)
+        {
+            canvas.title("Интерполяция Сплайном");
         }};
     d.draw();
 }
 
-void diff(){
-    double delta=1;
+void diff()
+{
+    double delta = 1;
     std::vector<double> righty;
     std::vector<double> rightx;
     std::vector<double> lefty;
@@ -441,18 +442,21 @@ void diff(){
     std::vector<double> centrey;
     std::vector<double> centrex;
 
-    for(size_t i=0 ;i< X.size()-1; i++){
-        auto temp=(Y[i+delta]-Y[i])/(delta*2.0);
+    for (size_t i = 0; i < X.size() - 1; i++)
+    {
+        double temp = (Y[i + static_cast<int64_t>(delta)] - Y[i]) / (delta * 2.0);
         righty.push_back(temp);
         rightx.push_back(X[i]);
     }
-    for(size_t i=1 ;i< X.size(); i++){
-        auto temp=(Y[i]-Y[i-delta])/(delta*2.0);
+    for (size_t i = 1; i < X.size(); i++)
+    {
+        double temp = (Y[i] - Y[i - static_cast<int64_t>(delta)]) / (delta * 2.0);
         lefty.push_back(temp);
         leftx.push_back(X[i]);
     }
-    for(size_t i=1 ;i< X.size()-1; i++){
-        auto temp=(Y[i+delta]-Y[i-delta])/(delta*2.0);
+    for (size_t i = 1; i < X.size() - 1; i++)
+    {
+        double temp = (Y[i + static_cast<int64_t>(delta)] - Y[i - static_cast<int64_t>(delta)]) / (delta * 2.0);
         centrey.push_back(temp);
         centrex.push_back(X[i]);
     }
@@ -460,9 +464,9 @@ void diff(){
         [&](Plot2D &plot)
         {
             plot.drawCurve(X, Y).label("Оригинальная функция");
-            plot.drawCurve(rightx,righty).label("Правый");
-            plot.drawCurve(leftx,lefty).label("Левый");
-            plot.drawCurve(centrex,centrey).label("Центральный");
+            plot.drawCurve(rightx, righty).label("Правый");
+            plot.drawCurve(leftx, lefty).label("Левый");
+            plot.drawCurve(centrex, centrey).label("Центральный");
         },
         [](Canvas &canvas) {
 
@@ -471,47 +475,47 @@ void diff(){
 }
 int main()
 {
-    #if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32) || defined(_WIN64)
     setlocale(LC_ALL, "Russian");
-    #endif
+#endif
 
-    std::string input;
-    std::map<std::string, std::pair<std::string, std::function<void(void)>>> menu = {
-        {{"O"}, {"Оригинальная функция", []()
-                 { origin(); }}},
-        {{"A"}, {"Аппроксимация методом наименьших квадратов", []()
-                 { approx(); }}},
-        {{"S"}, {"Аппроксимация Сплайнами", []()
-                 { spline(); }}},
-        {{"D"}, {"Дифференцирование", []()
-                 { diff(); }}},
-        {{"L3"}, {"Интерполяция Лагранжа по 3 точкам", []()
-                  { lagranzh(3); }}},
-        {{"L5"}, {"Интерполяция Лагранжа по 5 точкам", []()
-                  { lagranzh(5); }}},
-        {{"L8"}, {"Интерполяция Лагранжа по 8 точкам", []()
-                  { lagranzh(8); }}},
-        {{"N3"}, {"Интерполяция Ньютона по 3 точкам", []()
-                  { newton(3); }}},
-        {{"N5"}, {"Интерполяция Ньютона по 5 точкам", []()
-                  { newton(5); }}},
-        {{"N8"}, {"Интерполяция Ньютона по 8 точкам", []()
-                  { newton(8); }}},
+    std::wstring input;
+    std::map<std::wstring, std::pair<std::wstring, std::function<void(void)>>> menu = {
+        {{L"O"}, {L"Оригинальная функция", []()
+                  { origin(); }}},
+        {{L"A"}, {L"Аппроксимация методом наименьших квадратов", []()
+                  { approx(); }}},
+        {{L"S"}, {L"Аппроксимация Сплайнами", []()
+                  { spline(); }}},
+        {{L"D"}, {L"Дифференцирование", []()
+                  { diff(); }}},
+        {{L"L3"}, {L"Интерполяция Лагранжа по 3 точкам", []()
+                   { lagranzh(3); }}},
+        {{L"L5"}, {L"Интерполяция Лагранжа по 5 точкам", []()
+                   { lagranzh(5); }}},
+        {{L"L8"}, {L"Интерполяция Лагранжа по 8 точкам", []()
+                   { lagranzh(8); }}},
+        {{L"N3"}, {L"Интерполяция Ньютона по 3 точкам", []()
+                   { newton(3); }}},
+        {{L"N5"}, {L"Интерполяция Ньютона по 5 точкам", []()
+                   { newton(5); }}},
+        {{L"N8"}, {L"Интерполяция Ньютона по 8 точкам", []()
+                   { newton(8); }}},
         //{}
     };
     for (;;)
     {
         for (auto &[cmd, value] : menu)
         {
-            std::cout << cmd << ": " << value.first << std::endl;
+            std::wcout << cmd << ": " << value.first << std::endl;
         }
 
-        std::getline(std::cin, input);
+        std::getline(std::wcin, input);
         if (menu[input].first.size() > 0)
         {
             menu[input].second();
         }
-        else if (input == "q")
+        else if (input == L"q")
         {
             return 0;
         }
