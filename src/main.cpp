@@ -210,7 +210,7 @@ void approx()
 {
     std::vector<double> a, b, x, y;
     std::vector<std::vector<double>> sums;
-    int N = 10, K = 3;
+    int N = 8, K = 2;
     {
         // allocate memory for matrixes
         a = std::vector<double>(K + 1, 0);
@@ -222,10 +222,10 @@ void approx()
     {
         int i = 0, j = 0, k = 0;
         // read x, y matrixes from input file
-        for (k = 0; k < N; k++)
+        // for (k = 0; k < N; k++)
         {
-            x[k] = X[((x.size()) / N) * k];
-            y[k] = Y[((x.size()) / N) * k];
+            x = {X.front(), X[25], X[50], X[75], X[100], X[125], X[150], X.back()};
+            y = {Y.front(), Y[25], Y[50], Y[75], Y[100], Y[125], Y[150], Y.back()};
         }
         // init square sums matrix
         for (i = 0; i < K + 1; i++)
@@ -308,13 +308,172 @@ void approx()
             a[i] = (b[i] - s) / sums[i][i];
         }
     }
+    std::vector<double> new_Y;
+    for (auto x : X)
+    {
+        new_Y.push_back(a[0] + a[1] * x + a[2] * x * x);
+    }
+
+    Drawer d{
+        [new_Y](Plot2D &plot)
+        {
+            plot.drawCurve(X, Y).label("Оригинальная функция");
+            plot.drawCurve(X, new_Y).label("Аппроксимация методом наименьших квадратов");
+        },
+        [](Canvas &canvas) {
+
+        }};
+    d.draw();
 }
 
+struct spline_attributes
+{
+    double a, b, c, d, x;
+};
+
+std::vector<spline_attributes>
+buildSpline(std::vector<double> x, std::vector<double> y, size_t n)
+{
+    auto splines = std::vector<spline_attributes>(n);
+    for (size_t i = 0; i < n; i++)
+    {
+        splines[i].x = x[i];
+        splines[i].a = y[i];
+    }
+    splines[0].c = splines[n - 1].c = 0.f;
+    auto alpha = std::vector<double>(n - 1);
+    auto beta = std::vector<double>(n - 1);
+    for (size_t i = 1; i < n - 1; i++)
+    {
+        auto hi = x[i] - x[i - 1];
+        auto hi1 = x[i + 1] - x[i];
+        auto A = hi;
+        auto C = 2.0 * (hi + hi1);
+        auto B = hi1;
+        auto F = 6.0 * ((y[i + 1] - y[i]) / hi1 - (y[i] - y[i - 1]) / hi);
+        auto z = (A * alpha[i - 1] + C);
+        alpha[i] = -B / z;
+        beta[i] = (F - A * beta[i - 1]) / z;
+    }
+    for (size_t i = n - 2; i > 0; i--)
+    {
+        splines[i].c = alpha[i] * splines[i + 1].c + beta[i];
+    }
+    for (size_t i = n - 1; i > 0; i--)
+    {
+        auto hi = x[i] - x[i - 1];
+        splines[i].d = (splines[i].c - splines[i - 1].c) / hi;
+        splines[i].b = hi * (2.0 * splines[i].c + splines[i - 1].c) / 6.0 + (y[i] - y[i - 1]) / hi;
+    }
+    return splines;
+}
+
+double interpolate(std::vector<spline_attributes> splines, double x)
+{
+    auto n = splines.size();
+    auto s = spline_attributes{};
+    if (x <= splines[0].x)
+    {
+        s = splines[0];
+    }
+    else if (x >= splines[n - 1].x)
+    {
+        s = splines[n - 1];
+    }
+    else
+    {
+        size_t i = 0;
+        auto j = n - 1;
+        while (i + 1 < j)
+        {
+            auto k = i + (j - i) / 2;
+            if (x <= splines[k].x)
+            {
+                j = k;
+            }
+            else
+            {
+                i = k;
+            }
+        }
+        s = splines[j];
+    }
+    auto dx = x - s.x;
+    return s.a + (s.b + (s.c / 2.0 + (s.d * dx) / 6.0) * dx) * dx;
+}
+
+void spline()
+{
+    std::vector<double> x_values;
+    std::vector<double> y_values;
+
+    x_values = {X.front(), X[25], X[50], X[75], X[100], X[125], X[150], X.back()};
+    y_values = {Y.front(), Y[25], Y[50], Y[75], Y[100], Y[125], Y[150], Y.back()};
+
+    auto spline = buildSpline(x_values, y_values, x_values.size());
+
+
+    auto larganzhFunc = create_Lagrange_polynomial(x_values, y_values);
+    std::vector<double> new_Y;
+    for (auto x : X)
+    {
+        new_Y.push_back(interpolate(spline, x));
+    }
+
+    Drawer d{
+        [new_Y](Plot2D &plot)
+        {
+            plot.drawCurve(X, Y).label("Оригинальная функция");
+            plot.drawCurve(X, new_Y).label("Интерполяция Сплайнами");
+        },
+        [](Canvas &canvas) {
+
+        }};
+    d.draw();
+}
+
+void diff(){
+    double delta=1;
+    std::vector<double> righty;
+    std::vector<double> rightx;
+    std::vector<double> lefty;
+    std::vector<double> leftx;
+    std::vector<double> centrey;
+    std::vector<double> centrex;
+
+    for(size_t i=0 ;i< X.size()-1; i++){
+        auto temp=(Y[i+delta]-Y[i])/(delta*2.0);
+        righty.push_back(temp);
+        rightx.push_back(X[i]);
+    }
+    for(size_t i=1 ;i< X.size(); i++){
+        auto temp=(Y[i]-Y[i-delta])/(delta*2.0);
+        lefty.push_back(temp);
+        leftx.push_back(X[i]);
+    }
+    for(size_t i=1 ;i< X.size()-1; i++){
+        auto temp=(Y[i+delta]-Y[i-delta])/(delta*2.0);
+        centrey.push_back(temp);
+        centrex.push_back(X[i]);
+    }
+    Drawer d{
+        [&](Plot2D &plot)
+        {
+            plot.drawCurve(X, Y).label("Оригинальная функция");
+            plot.drawCurve(rightx,righty).label("Правый");
+            plot.drawCurve(leftx,lefty).label("Левый");
+            plot.drawCurve(centrex,centrey).label("Центральный");
+        },
+        [](Canvas &canvas) {
+
+        }};
+    d.draw();
+}
 int main()
 {
-    // #if defined(_WIN32) || defined(_WIN64)
-    //setlocale(LC_ALL, "Russian");
-    // #endif
+    #if defined(_WIN32) || defined(_WIN64)
+    setlocale(LC_ALL, "Russian");
+    #endif
 
     std::string input;
     std::map<std::string, std::pair<std::string, std::function<void(void)>>> menu = {
@@ -322,6 +481,10 @@ int main()
                  { origin(); }}},
         {{"A"}, {"Аппроксимация методом наименьших квадратов", []()
                  { approx(); }}},
+        {{"S"}, {"Аппроксимация Сплайнами", []()
+                 { spline(); }}},
+        {{"D"}, {"Дифференцирование", []()
+                 { diff(); }}},
         {{"L3"}, {"Интерполяция Лагранжа по 3 точкам", []()
                   { lagranzh(3); }}},
         {{"L5"}, {"Интерполяция Лагранжа по 5 точкам", []()
@@ -342,31 +505,7 @@ int main()
         {
             std::cout << cmd << ": " << value.first << std::endl;
         }
-        /*if (input == "O"){
-            origin();
-        }
-        else if (input == "N3")
-        {
-            newton(3);
-        }
-        else if (input == "N5")
-        {
-            newton(5);
-        }
-        else if (input == "N8")
-        {
-            newton(8);
-        }
-        else if (input == "L3"){
-            lagranzh(3);
-        }
-        else if (input == "L5"){
-            lagranzh(5);
-        }
-        else if (input == "L8"){
-            lagranzh(8);
-        }
-        */
+
         std::getline(std::cin, input);
         if (menu[input].first.size() > 0)
         {
