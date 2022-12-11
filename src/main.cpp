@@ -207,13 +207,14 @@ void lagranzh(size_t k)
     d.draw();
 }
 
-void approx()
+void approx(size_t K)
 {
     std::vector<double> a, b, x, y;
     std::vector<std::vector<double>> sums;
-    int N = 8, K = 2;
-    x = {X.front(), X[25], X[50], X[75], X[100], X[125], X[150], X.back()};
-    y = {Y.front(), Y[25], Y[50], Y[75], Y[100], Y[125], Y[150], Y.back()};
+
+    x = {X.front(), X[25], X[50], X[75],X[85], X[100], X[125],X[135],X[145], X[150],X[165],X[175], X.back()};
+    y = {Y.front(), Y[25], Y[50], Y[75],Y[85], Y[100], Y[125],Y[135],Y[145], Y[150],Y[165],Y[175], Y.back()};
+    int N = x.size();
     {
         // allocate memory for matrixes
         a = std::vector<double>(K + 1, 0);
@@ -281,8 +282,7 @@ void approx()
             {
                 if (sums[k][k] == 0)
                 {
-                    std::wcout << L"\nНет решений матрицы!\n"
-                               << std::endl;
+                    std::wcout << L"Нет решений матрицы!" << std::endl;
                     return;
                 }
                 double M = sums[i][k] / sums[k][k];
@@ -304,11 +304,25 @@ void approx()
             a[i] = (b[i] - s) / sums[i][i];
         }
     }
+
+    double error2=0.f;
     std::vector<double> new_Y;
-    for (auto x : X)
+    for (size_t i=0; i<X.size(); i++)
     {
-        new_Y.push_back(a[0] + a[1] * x + a[2] * x * x);
+        auto x = X[i];
+        auto y = Y[i];
+        //a[0] + a[1] * x + a[2] * x * x+a[3]*x*x*x
+        double new_y=1.f, pow_x=1.f;
+        for(size_t i=0;i<=K; i++){
+            new_y += a[i]*pow_x;
+            pow_x *=x;
+        }
+        new_Y.push_back(new_y);
+        error2+=(new_y-y)*(new_y-y);
     }
+
+    double error = sqrtl(error2/static_cast<double>(X.size()-1));
+    std::wcout << L"Среднеквадратическое отклонение равно: " << error << std::endl;
 
     Drawer d{
         [&](Plot2D &plot)
@@ -543,8 +557,12 @@ int main()
     std::map<std::wstring, std::pair<std::wstring, std::function<void(void)>>> menu = {
         {{L"O"}, {L"Оригинальная функция", []()
                   { origin(); }}},
-        {{L"A"}, {L"Аппроксимация методом наименьших квадратов", []()
-                  { approx(); }}},
+        {{L"A2"}, {L"Аппроксимация методом наименьших квадратов для параболы", []()
+                  { approx(2); }}},
+        {{L"A3"}, {L"Аппроксимация методом наименьших квадратов для кубики", []()
+                  { approx(3); }}},
+        {{L"A5"}, {L"Аппроксимация методом наименьших квадратов для полинома пятой степени", []()
+                  { approx(5); }}},
         {{L"S"}, {L"Аппроксимация Сплайнами", []()
                   { spline(); }}},
         {{L"D"}, {L"Дифференцирование", []()
@@ -567,10 +585,10 @@ int main()
     };
     for (;;)
     {
-        std::wcout << L"Ввод:  Команда" << std::endl;
+        std::wcout << L"Ввод:\t Команда" << std::endl;
         for (auto &[cmd, value] : menu)
         {
-            std::wcout << cmd << ": " << value.first << std::endl;
+            std::wcout << cmd << ":\t " << value.first << std::endl;
         }
 
         std::getline(std::wcin, input);
