@@ -21,7 +21,7 @@ struct Drawer
     Drawer(CustomDrawFunction drawFunctions,
            CustomCanvasFunction canvasFunctions) : drawFunctions{drawFunctions},
                                                    canvasFunctions{canvasFunctions} {}
-    void draw()
+    void draw(bool show = true)
     {
         Plot2D plot;
         plot.xlabel("x");
@@ -32,7 +32,10 @@ struct Drawer
         Canvas canvas = {{fig}};
         canvasFunctions(canvas);
         canvas.size(1200, 720);
-        canvas.show();
+        if (show)
+        {
+            canvas.show();
+        }
     }
 };
 
@@ -606,21 +609,22 @@ void integration()
     //% погрешность метода
     std::wcout << L"Абсолютная погрешность метода средних прямоугольников:\t" << pogrechnost2 << std::endl;
 
-
     auto trap = h * ((k1 + k2) / 2 + (ff - (k1 + k2)));
     //% метод трапеции
     std::wcout << L"метод трапеции" << trap << std::endl;
-    auto pogrechnost3 = *mm2 * (h *h*h * (n - 1) / 12);
+    auto pogrechnost3 = *mm2 * (h * h * h * (n - 1) / 12);
     // % погрешность метода
     std::wcout << L"Абсолютная погрешность метода трапеции:\t" << pogrechnost3 << std::endl;
 
     double summ1 = 0;
     //% вычисление сумм для метода Симпсона
     double summ2 = 0;
-    for (size_t i = 2; i<n - 2; i++){
+    for (size_t i = 2; i < n - 2; i++)
+    {
         summ1 = summ1 + Y[i];
     }
-    for (size_t i = 3; i<n - 1; i++){
+    for (size_t i = 3; i < n - 1; i++)
+    {
         summ2 = summ2 + Y[i];
     }
 
@@ -631,8 +635,9 @@ void integration()
 
     std::vector<double> dx3{};
 
-    for (size_t i = 2; i<n - 2; i++){
-        dx3.push_back(Y[i - 2] - 4.f * Y[i - 1] + 6.f * Y[i] - 4.f * Y[i - 1] - Y[i - 2] / (h*h*h*h));
+    for (size_t i = 2; i < n - 2; i++)
+    {
+        dx3.push_back(Y[i - 2] - 4.f * Y[i - 1] + 6.f * Y[i] - 4.f * Y[i - 1] - Y[i - 2] / (h * h * h * h));
     }
     std::transform(dx3.begin(), dx3.end(),
                    dx3.begin(), // write to the same location
@@ -641,20 +646,147 @@ void integration()
     auto mm3 = std::max_element(dx3.begin(), dx3.end());
 
     auto a = (n - 1) * h;
-    auto pogrechnost4 = (*mm3 * a*a*a*a*a) / (2880.f * (n - 1)* (n - 1)* (n - 1)* (n - 1));
+    auto pogrechnost4 = (*mm3 * a * a * a * a * a) / (2880.f * (n - 1) * (n - 1) * (n - 1) * (n - 1));
     //% погрешность метода
     std::wcout << L"Абсолютная погрешность метода Симпсона:" << pogrechnost4 << std::endl;
 }
 
+void mathModel()
+{
+    std::vector<double> x_values;
+    std::vector<double> y_values;
+
+    x_values = {X.front(), X[15], X[25], X[35], X[50], X[60], X[70], X[75], X[90], X[100], X[125], X[145], X[160], X[170], X[175], X.back()};
+    y_values = {Y.front(), Y[15], Y[25], Y[35], Y[50], Y[60], Y[70], Y[75], Y[90], Y[100], Y[125], Y[145], Y[160], Y[170], Y[175], Y.back()};
+
+    auto spline = buildSpline(x_values, y_values, x_values.size());
+
+    auto larganzhFunc = create_Lagrange_polynomial(x_values, y_values);
+    std::vector<double> new_Y;
+    for (auto x : X)
+    {
+        new_Y.push_back(interpolate(spline, x));
+    }
+
+    double x_0;
+    std::wcout << L"Введите Xo = " << std::endl;
+    std::wcin >> x_0;
+
+    // Скорость
+    auto x_m = X;
+    auto y_m = new_Y;
+    size_t i0 = 0;
+    while (x_m[i0] < x_0)
+    {
+        i0++;
+    }
+    double y_0 = y_m[i0];
+    double C = 9.8f * y_0;
+    auto tg = std::vector<double>(y_m.size(), 0);
+    tg[0] = y_m[1] / x_m[1];
+
+    for (size_t i = 1; i < y_m.size(); i++)
+    {
+        tg[i] = (y_m[i] - y_m[i - 1]) / (x_m[i] - x_m[i - 1]);
+    }
+
+    auto Y_x = std::vector<double>(y_m.size(), 0);
+    for (size_t i = 0; i < y_m.size(); i++)
+    {
+        Y_x[i] = std::abs(std::sqrtl(2.f * (C - 9.8f * y_m[i]) / (1.f + (tg[i]) * (tg[i]))));
+    }
+
+    auto delta_t = std::vector<double>(Y_x.size(), 0);
+    for (size_t i = 0; i < Y_x.size(); i++)
+    {
+        delta_t[i] = 0.5f / Y_x[i];
+    }
+
+    auto YY = std::vector<double>(x_m.size(), 0);
+    for (size_t i = i0; i < x_m.size(); i++)
+    {
+        if (y_m[i] <= y_0)
+        {
+            YY[i] = Y_x[i];
+        }
+    }
+
+    {
+        Drawer d{
+            [&](Plot2D &plot)
+            {
+                plot.drawCurve(X, Y).label("Оригинальная функция");
+                plot.drawCurve(x_m, YY).label("Функция Скорости");
+            },
+            [](Canvas &canvas)
+            {
+                canvas.title("Скорость");
+            }};
+        d.draw();
+    }
+
+    {
+        int flag, a;
+        ;
+        if (tg[i0] < 0.f)
+        {
+            flag = 1;
+            a = 1;
+        }
+        else
+        {
+            flag = 0;
+            a = -1;
+        }
+
+        int j = 0;
+        int i = static_cast<int>(i0) + a;
+
+        while (j < 2)
+        {
+            while (y_0 > y_m[i])
+            {
+
+                Drawer d{
+                    [&](Plot2D &plot)
+                    {
+                        std::vector<double> XX = {X[i]};
+                        std::vector<double> YY = {Y[i]};
+                        plot.drawCurve(X, Y).label("Оригинальная функция");
+                        plot.drawPoints(XX, YY).label("Материальная точка").pointSize(1).pointType(7);
+                    },
+                    [&](Canvas &canvas)
+                    {
+                        std::string name = "pic";
+                        static int ii=1;
+                        std::wcout << L"Конвертация модели в изображения, шаг:  \t" << ii <<  std::endl;
+                        name = name + std::to_string(ii++) + ".png";
+                        canvas.title("Материальная точка");
+                        canvas.size(1200, 720);
+                        canvas.save(name);
+                    }};
+                d.draw(false);
+                i = i + a;
+            }
+            if (flag == 1)
+            {
+                flag = 0;
+                a = -1;
+            }
+            else
+            {
+                flag = 1;
+                a = 1;
+            }
+            i = i + a;
+            j = j + 1;
+        }
+    }
+}
+
 int main()
 {
-#ifdef _MSC_VER
-    setlocale(LC_ALL, "ru_RU.UTF8");
-    std::system("chcp 1251");
-#else
-    setlocale(LC_ALL, "en_US.utf8");
-#endif
-    std::wcout << L"Начало" << std::endl;
+    setlocale(LC_ALL, ".UTF8");
 
     std::wstring input;
     std::map<std::wstring, std::pair<std::wstring, std::function<void(void)>>> menu = {
@@ -672,6 +804,8 @@ int main()
                   { diff(); }}},
         {{L"I"}, {L"Интегрирование", []()
                   { integration(); }}},
+        {{L"M"}, {L"Математическая модель", []()
+                  { mathModel(); }}},
         {{L"L3"}, {L"Интерполяция Лагранжа по 3 точкам", []()
                    { lagranzh(3); }}},
         {{L"L5"}, {L"Интерполяция Лагранжа по 5 точкам", []()
@@ -696,7 +830,7 @@ int main()
             std::wcout << cmd << L":\t " << value.first << std::endl;
         }
 
-        std::getline(std::wcin, input);
+        std::wcin >> input;
         if (menu[input].first.size() > 0)
         {
             menu[input].second();
