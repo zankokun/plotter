@@ -224,7 +224,7 @@ void approx(size_t K)
         sums = std::vector<std::vector<double>>(K + 1, std::vector<double>(K + 1, 0));
     }
     {
-        size_t i = 0, j = 0, k = 0;
+        int i = 0, j = 0, k = 0;
         // init square sums matrix
         for (i = 0; i < K + 1; i++)
         {
@@ -248,7 +248,7 @@ void approx(size_t K)
     }
 
     {
-        size_t i, j, k;
+        int i, j, k;
         double temp = 0;
         for (i = 0; i < K + 1; i++)
         {
@@ -276,7 +276,7 @@ void approx(size_t K)
         }
     }
     {
-        size_t i = 0, j = 0, k = 0;
+        int i = 0, j = 0, k = 0;
         // process rows
         for (k = 0; k < K + 1; k++)
         {
@@ -296,7 +296,7 @@ void approx(size_t K)
             }
         }
 
-        for (i = (K + 1) - 1; i >= 0; i--)
+        for (i = static_cast<int>(K + 1) - 1; i >= 0; i--)
         {
             double s = 0;
             for (j = i; j < K + 1; j++)
@@ -606,39 +606,44 @@ void integration()
     //% погрешность метода
     std::wcout << L"Абсолютная погрешность метода средних прямоугольников:\t" << pogrechnost2 << std::endl;
 
-    /*
-    trap = h * ((k1 + k2) / 2 + (ff - (k1 + k2)));
-    % метод трапеции
-            std::wcout << L("метод трапеции");
-    std::wcout << L(trap << std::endl;
-    pogrechnost3 = mm2 * (h ^ 3 * (n - 1) / 12);
-    % погрешность метода
-            std::wcout << L("Абсолютная погрешность метода трапеции:");
-    std::wcout << L(pogrechnost3 << std::endl;
 
-    summ1 = 0;
-    % вычисление сумм для метода Симпсона
-            summ2 = 0;
-    for (i = 3 : 2 : n - 3)
-        summ1 = summ1 + y(i);
-    end for (i = 4 : 2 : n - 2)
-        summ2 = summ2 + y(i);
-    end
-        h3 = h / 3;
-    simpson = h3 * (k1 + k2 + 4 * summ1 + 2 * summ2);
-    % метод Симпсона
-            std::wcout << L("метод Симпсона");
-    std::wcout << L(simpson << std::endl;
-    for (i = 3 : 1 : n - 2)
-        dx4(i) = y(i - 2) - 4 * y(i - 1) + 6 * y(i) - 4 * y(i - 1) - y(i - 2) / (h ^ 4);
-    end
-        mm4 = max(abs(dx4));
-    a = (n - 1) * h;
-    pogrechnost4 = (mm4 * (a) ^ 5) / (2880 * (n - 1) ^ 4);
-    % погрешность метода
-            std::wcout << L("Абсолютная погрешность метода Симпсона:");
-    std::wcout << L(pogrechnost4 << std::endl;
-    */
+    auto trap = h * ((k1 + k2) / 2 + (ff - (k1 + k2)));
+    //% метод трапеции
+    std::wcout << L"метод трапеции" << trap << std::endl;
+    auto pogrechnost3 = *mm2 * (h *h*h * (n - 1) / 12);
+    // % погрешность метода
+    std::wcout << L"Абсолютная погрешность метода трапеции:\t" << pogrechnost3 << std::endl;
+
+    double summ1 = 0;
+    //% вычисление сумм для метода Симпсона
+    double summ2 = 0;
+    for (size_t i = 2; i<n - 2; i++){
+        summ1 = summ1 + Y[i];
+    }
+    for (size_t i = 3; i<n - 1; i++){
+        summ2 = summ2 + Y[i];
+    }
+
+    auto h3 = h / 6.f;
+    auto simpson = h3 * (k1 + k2 + 4.f * summ1 + 2.f * summ2);
+    //% метод Симпсона
+    std::wcout << L"метод Симпсона:\t" << simpson << std::endl;
+
+    std::vector<double> dx3{};
+
+    for (size_t i = 2; i<n - 2; i++){
+        dx3.push_back(Y[i - 2] - 4.f * Y[i - 1] + 6.f * Y[i] - 4.f * Y[i - 1] - Y[i - 2] / (h*h*h*h));
+    }
+    std::transform(dx3.begin(), dx3.end(),
+                   dx3.begin(), // write to the same location
+                   [](double d)
+                   { return d > 0 ? d : d * -1.f; });
+    auto mm3 = std::max_element(dx3.begin(), dx3.end());
+
+    auto a = (n - 1) * h;
+    auto pogrechnost4 = (*mm3 * a*a*a*a*a) / (2880.f * (n - 1)* (n - 1)* (n - 1)* (n - 1));
+    //% погрешность метода
+    std::wcout << L"Абсолютная погрешность метода Симпсона:" << pogrechnost4 << std::endl;
 }
 
 int main()
