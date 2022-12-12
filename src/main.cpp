@@ -726,8 +726,11 @@ void mathModel()
     }
 
     {
+        std::system("del *.gif  > nul 2>&1");
+        std::system("del *.png  > nul 2>&1");
+        std::system("del *.plt  > nul 2>&1");
         int flag, a;
-        ;
+
         if (tg[i0] < 0.f)
         {
             flag = 1;
@@ -758,8 +761,8 @@ void mathModel()
                     [&](Canvas &canvas)
                     {
                         std::string name = "pic";
-                        static int ii=1;
-                        std::wcout << L"Конвертация модели в изображения, шаг:  \t" << ii <<  std::endl;
+                        static int ii = 1;
+                        std::wcout << L"Конвертация модели в изображения, шаг:  \t" << ii << std::endl;
                         name = name + std::to_string(ii++) + ".png";
                         canvas.title("Материальная точка");
                         canvas.size(1200, 720);
@@ -781,6 +784,9 @@ void mathModel()
             i = i + a;
             j = j + 1;
         }
+        std::system("ffmpeg -f image2 -i pic%d.png model.gif > nul 2>&1");
+        std::system("del *.png  > nul 2>&1");
+        std::system("del *.plt  > nul 2>&1");
     }
 }
 
