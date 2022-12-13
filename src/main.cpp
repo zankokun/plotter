@@ -708,6 +708,14 @@ void mathModel()
             YY[i] = Y_x[i];
         }
     }
+    if(i0>130)
+    for (size_t i = i0-1; i >0; i--)
+    {
+        if (y_m[i] <= y_0)
+        {
+            YY[i] = Y_x[i];
+        }
+    }
 
     {
         Drawer d{
@@ -739,35 +747,44 @@ void mathModel()
             flag = 0;
             a = -1;
         }
-
+        if (i0<=4.f)
+        {
+            std::wcout << L"Материальная Точка не подвижна в Xo = " << i0 << std::endl;
+            return;
+        }
         int j = 0;
-        int i = static_cast<int>(i0) + a;
-
+        int i = static_cast<int>(i0)+a;
+        double di = i;  // Хi
+        int ii = 1; // кадры
         while (j < 2)
         {
-            while (i>=0 && i < y_m.size() && y_0 >= y_m[i])
+            while (i >= 0 && i < y_m.size() && Y[i]<= Y[i0] && y_0 >= y_m[i])
             {
 
                 Drawer d{
                     [&](Plot2D &plot)
                     {
-                        std::vector<double> XX = {X[i]};
-                        std::vector<double> YY = {Y[i]};
-                        plot.drawCurve(X, Y).label("Оригинальная функция");
-                        plot.drawPoints(XX, YY).label("Материальная точка").pointSize(1).pointType(7);
+                        std::vector<double> Xtemp = {X[i]};
+                        std::vector<double> Ytemp = {interpolate(spline, di)};
+                        plot.drawCurve(X, new_Y).label("Оригинальная функция");
+                        plot.drawPoints(Xtemp, Ytemp).label("Материальная точка").pointSize(1).pointType(7);
                     },
                     [&](Canvas &canvas)
                     {
                         std::string name = "pic";
-                        static int ii = 1;
-                        std::wcout << L"Конвертация модели в изображения, шаг:  \t" << ii << std::endl;
+                        std::wcout << L"Конвертация модели в изображения, шаг:  " << ii << L"  x=" << di << std::endl;
                         name = name + std::to_string(ii++) + ".png";
                         canvas.title("Материальная точка");
-                        canvas.size(1024, 600);
+                        canvas.size(900, 600);
                         canvas.save(name);
                     }};
                 d.draw(false);
-                i = i + a;
+                di += double(a) * YY[i] / 20.f;
+                i = static_cast<int>(di);
+                if (std::abs(di-i0)<1.f)
+                {
+                    break;
+                }
             }
             if (flag == 1)
             {
@@ -785,6 +802,7 @@ void mathModel()
         std::system("ffmpeg -f image2 -i pic%d.png model.gif > nul 2>&1");
         std::system("del *.png  > nul 2>&1");
         std::system("del *.plt  > nul 2>&1");
+        std::system(".\\model.gif");
     }
 }
 
