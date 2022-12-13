@@ -22,3 +22,7 @@ cmake ..
 cmake --build .
 ./plotter.sln
 ```
+
+# Possible issues:
+- Garbadge in the output
+  - Enable the new UTF-8 option in `Windows settings`. Go to the `language settings`, click `Administrative language settings`, then `Change system locale…` and tick the Beta: `Use Unicode UTF-8 for worldwide language support option`.

@@ -24,8 +24,8 @@ struct Drawer
     void draw(bool show = true)
     {
         Plot2D plot;
-        plot.xlabel("x");
-        plot.ylabel("y");
+        plot.xlabel("X");
+        plot.ylabel("Y");
         plot.legend().atOutsideRight().displayVertical().displayExpandHeightBy(2);
         drawFunctions(plot);
         Figure fig = {{plot}};
@@ -429,7 +429,6 @@ void spline()
 
     auto spline = buildSpline(x_values, y_values, x_values.size());
 
-    auto larganzhFunc = create_Lagrange_polynomial(x_values, y_values);
     std::vector<double> new_Y;
     for (auto x : X)
     {
@@ -661,7 +660,6 @@ void mathModel()
 
     auto spline = buildSpline(x_values, y_values, x_values.size());
 
-    auto larganzhFunc = create_Lagrange_polynomial(x_values, y_values);
     std::vector<double> new_Y;
     for (auto x : X)
     {
@@ -747,7 +745,7 @@ void mathModel()
 
         while (j < 2)
         {
-            while (y_0 > y_m[i])
+            while (y_0 >= y_m[i])
             {
 
                 Drawer d{
@@ -765,7 +763,7 @@ void mathModel()
                         std::wcout << L"Конвертация модели в изображения, шаг:  \t" << ii << std::endl;
                         name = name + std::to_string(ii++) + ".png";
                         canvas.title("Материальная точка");
-                        canvas.size(1200, 720);
+                        canvas.size(1024, 600);
                         canvas.save(name);
                     }};
                 d.draw(false);
@@ -826,7 +824,6 @@ int main()
                    { newton(8); }}},
         {{L"q"}, {L"Выход", []()
                   { exit(0); }}},
-        //{}
     };
     for (;;)
     {
