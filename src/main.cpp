@@ -745,7 +745,7 @@ void mathModel()
 
         while (j < 2)
         {
-            while (y_0 >= y_m[i])
+            while (i>=0 && i < y_m.size() && y_0 >= y_m[i])
             {
 
                 Drawer d{
