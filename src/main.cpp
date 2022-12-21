@@ -24,8 +24,6 @@ struct Drawer
     void draw(bool show = true)
     {
         Plot2D plot;
-        plot.xlabel("X");
-        plot.ylabel("Y");
         plot.legend().atOutsideRight().displayVertical().displayExpandHeightBy(2);
         drawFunctions(plot);
         Figure fig = {{plot}};
@@ -44,6 +42,8 @@ void origin()
     Drawer d{
         [](Plot2D &plot)
         {
+            plot.xlabel("x (мм)");
+            plot.ylabel("y (мм)");
             plot.drawCurve(X, Y).label("Оригинальный график");
         },
         [](Canvas &canvas)
@@ -124,6 +124,8 @@ void newton(size_t k)
     Drawer d{
         [&](Plot2D &plot)
         {
+            plot.xlabel("x (мм)");
+            plot.ylabel("y (мм)");
             plot.drawCurve(X, Y).label("Оригинальная функция");
             plot.drawCurve(X, new_Y).label("Итог Интерполяции");
             plot.drawPoints(x_values, y_values).label("Точки интерполяции").pointSize(1).pointType(7);
@@ -201,6 +203,8 @@ void lagranzh(size_t k)
     Drawer d{
         [&](Plot2D &plot)
         {
+            plot.xlabel("x (мм)");
+            plot.ylabel("y (мм)");
             plot.drawCurve(X, Y).label("Оригинальная функция");
             plot.drawCurve(X, new_Y).label("Итог Интерполяции");
             plot.drawPoints(x_values, y_values).label("Точки интерполяции").pointSize(1).pointType(7);
@@ -333,6 +337,8 @@ void approx(size_t K)
     Drawer d{
         [&](Plot2D &plot)
         {
+            plot.xlabel("x (мм)");
+            plot.ylabel("y (мм)");
             plot.drawCurve(X, Y).label("Оригинальная функция");
             plot.drawCurve(X, new_Y).label("Итог Аппроксимации");
         },
@@ -438,6 +444,8 @@ void spline()
     Drawer d{
         [&](Plot2D &plot)
         {
+            plot.xlabel("x (мм)");
+            plot.ylabel("y (мм)");
             plot.drawCurve(X, Y).label("Оригинальная функция");
             plot.drawCurve(X, new_Y).label("Итог Интерполяции");
             plot.drawPoints(x_values, y_values).label("Точки интерполяции").pointSize(1).pointType(7);
@@ -492,6 +500,8 @@ void diff()
         Drawer d{
             [&](Plot2D &plot)
             {
+                plot.xlabel("x (мм)");
+                plot.ylabel("y (мм)");
                 plot.drawCurve(rightx, righty).label("Разностное отношение вперёд");
             },
             [](Canvas &canvas)
@@ -504,6 +514,8 @@ void diff()
         Drawer d{
             [&](Plot2D &plot)
             {
+                plot.xlabel("x (мм)");
+                plot.ylabel("y (мм)");
                 plot.drawCurve(leftx, lefty).label("Разностное отношение назад");
             },
             [](Canvas &canvas)
@@ -516,6 +528,8 @@ void diff()
         Drawer d{
             [&](Plot2D &plot)
             {
+                plot.xlabel("x (мм)");
+                plot.ylabel("y (мм)");
                 plot.drawCurve(centrex, centrey).label("Центральное разностное отношение");
             },
             [](Canvas &canvas)
@@ -528,6 +542,8 @@ void diff()
         Drawer d{
             [&](Plot2D &plot)
             {
+                plot.xlabel("x (мм)");
+                plot.ylabel("y (мм)");
                 plot.drawCurve(diff2x, diff2y).label("Вторая производная");
             },
             [](Canvas &canvas)
@@ -540,6 +556,8 @@ void diff()
         Drawer d{
             [&](Plot2D &plot)
             {
+                plot.xlabel("x (мм)");
+                plot.ylabel("y (мм)");
                 plot.drawCurve(rightx, righty).label("Разностное отношение вперёд");
                 plot.drawCurve(leftx, lefty).label("Разностное отношение назад");
                 plot.drawCurve(centrex, centrey).label("Центральное разностное отношение");
@@ -708,19 +726,21 @@ void mathModel()
             YY[i] = Y_x[i];
         }
     }
-    if(i0>130)
-    for (size_t i = i0-1; i >0; i--)
-    {
-        if (y_m[i] <= y_0)
+    if (i0 > 130)
+        for (size_t i = i0 - 1; i > 0; i--)
         {
-            YY[i] = Y_x[i];
+            if (y_m[i] <= y_0)
+            {
+                YY[i] = Y_x[i];
+            }
         }
-    }
 
     {
         Drawer d{
             [&](Plot2D &plot)
             {
+                plot.xlabel("x (мм)");
+                plot.ylabel("y (мм/сек)");
                 plot.drawCurve(X, Y).label("Оригинальная функция");
                 plot.drawCurve(x_m, YY).label("Функция Скорости");
             },
@@ -747,18 +767,18 @@ void mathModel()
             flag = 0;
             a = -1;
         }
-        if (i0<=4.f)
+        if (i0 <= 4.f)
         {
             std::wcout << L"Материальная Точка не подвижна в Xo = " << i0 << std::endl;
             return;
         }
         int j = 0;
-        int i = static_cast<int>(i0)+a;
-        double di = i;  // Хi
-        int ii = 1; // кадры
+        int i = static_cast<int>(i0) + a;
+        double di = i; // Хi
+        int ii = 1;    // кадры
         while (j < 2)
         {
-            while (i >= 0 && i < y_m.size() && Y[i]<= Y[i0] && y_0 >= y_m[i])
+            while (i >= 0 && i < y_m.size() && Y[i] <= Y[i0] && y_0 >= y_m[i])
             {
 
                 Drawer d{
@@ -766,6 +786,8 @@ void mathModel()
                     {
                         std::vector<double> Xtemp = {X[i]};
                         std::vector<double> Ytemp = {interpolate(spline, di)};
+                        plot.xlabel("x (мм)");
+                        plot.ylabel("y (мм)");
                         plot.drawCurve(X, new_Y).label("Оригинальная функция");
                         plot.drawPoints(Xtemp, Ytemp).label("Материальная точка").pointSize(1).pointType(7);
                     },
@@ -781,7 +803,7 @@ void mathModel()
                 d.draw(false);
                 di += double(a) * YY[i] / 20.f;
                 i = static_cast<int>(di);
-                if (std::abs(di-i0)<1.f)
+                if (std::abs(di - i0) < 1.f)
                 {
                     break;
                 }
