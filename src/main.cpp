@@ -701,7 +701,7 @@ void mathModel()
     auto angles = std::vector<double>(X.size(), 0);
     for (size_t i = 0; i < X.size() - 1; i++)
     {
-        angles[i] = std::atanl((Y[i + 1] - Y[i]) / (X[i + 1] - X[i]));
+        angles[i] = std::atanl((newY[i + 1] - newY[i]) / (X[i + 1] - X[i]));
         angles[i] *= -1.f;
     }
 
@@ -742,7 +742,7 @@ void mathModel()
             {
                 plot.xlabel("x (мм)");
                 plot.ylabel("y (мм/сек)");
-                plot.drawCurve(X, Y).label("Оригинальная кривая");
+                plot.drawCurve(X, newY).label("Оригинальная кривая");
                 plot.drawCurve(X, Vx).label("Зависимость скорости от координаты");
             },
             [](Canvas &canvas)
