@@ -678,62 +678,63 @@ void mathModel()
 
     auto spline = buildSpline(x_values, y_values, x_values.size());
 
-    std::vector<double> new_Y;
+    std::vector<double> newY;
     for (auto x : X)
     {
-        new_Y.push_back(interpolate(spline, x));
+        newY.push_back(interpolate(spline, x));
     }
 
-    double x_0;
+    double x0;
     std::wcout << L"Введите Xo = " << std::endl;
-    std::wcin >> x_0;
+    std::wcin >> x0;
 
-    // Скорость
-    auto x_m = X;
-    auto y_m = new_Y;
-    size_t i0 = 0;
-    while (x_m[i0] < x_0)
-    {
-        i0++;
-    }
-    double y_0 = y_m[i0];
-    double C = 9.8f * y_0;
-    auto tg = std::vector<double>(y_m.size(), 0);
-    tg[0] = y_m[1] / x_m[1];
+    auto dt = 0.1f;
+    auto g = 9.8f;
+    auto mu = 0.4f;
+    auto V = 0.0f;
+    auto Vt = std::vector<double>{};
+    auto Vx = std::vector<double>(X.size(), 0);
+    auto a = 0.0f;
+    auto t = std::vector<double>{};
+    auto T = 0.0f;
 
-    for (size_t i = 1; i < y_m.size(); i++)
+    auto angles = std::vector<double>(X.size(), 0);
+    for (size_t i = 0; i < X.size() - 1; i++)
     {
-        tg[i] = (y_m[i] - y_m[i - 1]) / (x_m[i] - x_m[i - 1]);
-    }
-
-    auto Y_x = std::vector<double>(y_m.size(), 0);
-    for (size_t i = 0; i < y_m.size(); i++)
-    {
-        Y_x[i] = std::abs(std::sqrtl(2.f * (C - 9.8f * y_m[i]) / (1.f + (tg[i]) * (tg[i]))));
+        angles[i] = std::atanl((Y[i + 1] - Y[i]) / (X[i + 1] - X[i]));
+        angles[i] *= -1.f;
     }
 
-    auto delta_t = std::vector<double>(Y_x.size(), 0);
-    for (size_t i = 0; i < Y_x.size(); i++)
+    auto step = 1;
+    int end = X.size();
+    if (angles[int(x0)] < 0)
     {
-        delta_t[i] = 0.5f / Y_x[i];
+        step = -1;
+        end = 0;
     }
-
-    auto YY = std::vector<double>(x_m.size(), 0);
-    for (size_t i = i0; i < x_m.size(); i++)
+    for (int i = int(x0); i * step < end; i += step)
     {
-        if (y_m[i] <= y_0)
+        auto angle = angles[i];
+        if ((step > 0))
         {
-            YY[i] = Y_x[i];
+            a = g * (std::sinl(angle) - mu * std::cosl(angle));
+        }
+        else if ((step < 0))
+        {
+            a = g * (std::sinl(angle) + mu * std::cosl(angle));
+        }
+        else
+        {
+            a = -1.f * g * mu;
+        }
+
+        V = V + a;
+        Vx[i] = std::abs(V);
+        if (V * step < 0)
+        {
+            break;
         }
     }
-    if (i0 > 130)
-        for (size_t i = i0 - 1; i > 0; i--)
-        {
-            if (y_m[i] <= y_0)
-            {
-                YY[i] = Y_x[i];
-            }
-        }
 
     {
         Drawer d{
@@ -741,8 +742,8 @@ void mathModel()
             {
                 plot.xlabel("x (мм)");
                 plot.ylabel("y (мм/сек)");
-                plot.drawCurve(X, Y).label("Оригинальная функция");
-                plot.drawCurve(x_m, YY).label("Функция Скорости");
+                plot.drawCurve(X, Y).label("Оригинальная кривая");
+                plot.drawCurve(X, Vx).label("Зависимость скорости от координаты");
             },
             [](Canvas &canvas)
             {
@@ -755,71 +756,85 @@ void mathModel()
         std::system("del *.gif  > nul 2>&1");
         std::system("del *.png  > nul 2>&1");
         std::system("del *.plt  > nul 2>&1");
-        int flag, a;
 
-        if (tg[i0] < 0.f)
+        if (x0 <= 4.f)
         {
-            flag = 1;
-            a = 1;
-        }
-        else
-        {
-            flag = 0;
-            a = -1;
-        }
-        if (i0 <= 4.f)
-        {
-            std::wcout << L"Материальная Точка не подвижна в Xo = " << i0 << std::endl;
+            std::wcout << L"Материальная Точка не подвижна в Xo = " << x0 << std::endl;
             return;
         }
-        int j = 0;
-        int i = static_cast<int>(i0) + a;
-        double di = i; // Хi
-        int ii = 1;    // кадры
-        while (j < 2)
-        {
-            while (i >= 0 && i < y_m.size() && Y[i] <= Y[i0] && y_0 >= y_m[i])
-            {
 
-                Drawer d{
-                    [&](Plot2D &plot)
-                    {
-                        std::vector<double> Xtemp = {X[i]};
-                        std::vector<double> Ytemp = {interpolate(spline, di)};
-                        plot.xlabel("x (мм)");
-                        plot.ylabel("y (мм)");
-                        plot.drawCurve(X, new_Y).label("Оригинальная функция");
-                        plot.drawPoints(Xtemp, Ytemp).label("Материальная точка").pointSize(1).pointType(7);
-                    },
-                    [&](Canvas &canvas)
-                    {
-                        std::string name = "pic";
-                        std::wcout << L"Конвертация модели в изображения, шаг:  " << ii << L"  x=" << di << std::endl;
-                        name = name + std::to_string(ii++) + ".png";
-                        canvas.title("Материальная точка");
-                        canvas.size(900, 600);
-                        canvas.save(name);
-                    }};
-                d.draw(false);
-                di += double(a) * YY[i] / 20.f;
-                i = static_cast<int>(di);
-                if (std::abs(di - i0) < 1.f)
-                {
-                    break;
-                }
-            }
-            if (flag == 1)
+        V = 0.f;
+        auto di = x0;
+        for (auto ii = 0; ii < 250; ii++)
+        {
+            if (di > X.size() - 1 || di < 0.f)
             {
-                flag = 0;
-                a = -1;
+                break;
+            }
+            Vt.push_back(V);
+            t.push_back(T);
+            auto angle = angles[di];
+            if (V > 0)
+            {
+                a = g * (std::sinl(angle) - mu * std::cosl(angle));
+            }
+            else if (V < 0)
+            {
+                a = g * (std::sinl(angle) + mu * std::cosl(angle));
             }
             else
             {
-                flag = 1;
-                a = 1;
+                a = -1.f * g * mu;
             }
-            i = i + a;
-            j = j + 1;
+            if (std::abs(std::tanl(angle) - mu) < 0.1)
+            {
+                a = 0.f;
+            }
+            V += a * dt;
+            T += dt;
+            di += V * dt * std::cosl(angle);
+
+            Drawer d{
+                [&](Plot2D &plot)
+                {
+                    std::vector<double> Xtemp = {di};
+                    std::vector<double> Ytemp = {interpolate(spline, di)};
+                    plot.xlabel("x (мм)");
+                    plot.ylabel("y (мм)");
+                    plot.drawCurve(X, newY).label("Оригинальная функция");
+                    plot.drawPoints(Xtemp, Ytemp).label("Материальная точка").pointSize(1).pointType(7);
+                },
+                [&](Canvas &canvas)
+                {
+                    std::string name = "pic";
+                    std::wcout << L"Конвертация модели в изображения, шаг:  " << ii << L"  x=" << di << std::endl;
+                    name = name + std::to_string(ii) + ".png";
+                    canvas.title("Материальная точка");
+                    canvas.size(900, 600);
+                    canvas.save(name);
+                }};
+
+            d.draw(false);
+
+            if (std::abs(angle) < 0.5f && std::abs(V) < 1.f)
+            {
+                break;
+            }
+        }
+
+        {
+            Drawer d{
+                [&](Plot2D &plot)
+                {
+                    plot.xlabel("x (сек)");
+                    plot.ylabel("y (мм/сек)");
+                    plot.drawCurve(t, Vt).label("Зависимость скорости от времени");
+                },
+                [](Canvas &canvas)
+                {
+                    canvas.title("Скорость и время");
+                }};
+            d.draw();
         }
         std::system("ffmpeg -f image2 -i pic%d.png model.gif > nul 2>&1");
         std::system("del *.png  > nul 2>&1");
