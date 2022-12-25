@@ -24,12 +24,12 @@ struct Drawer
     void draw(bool show = true)
     {
         Plot2D plot;
-        plot.legend().atOutsideRight().displayVertical().displayExpandHeightBy(2);
         drawFunctions(plot);
+        plot.legend().atOutsideBottomLeft().displayHorizontal().displayExpandWidthBy(10);
         Figure fig = {{plot}};
         Canvas canvas = {{fig}};
         canvasFunctions(canvas);
-        canvas.size(1200, 720);
+        canvas.size(1200, 800);
         if (show)
         {
             canvas.show();
@@ -42,8 +42,8 @@ void origin()
     Drawer d{
         [](Plot2D &plot)
         {
-            plot.xlabel("x (мм)");
-            plot.ylabel("y (мм)");
+            plot.xlabel("x (мм)").fontSize(14);
+            plot.ylabel("y (мм)").fontSize(14);
             plot.drawCurve(X, Y).label("Оригинальный график");
         },
         [](Canvas &canvas)
@@ -104,15 +104,20 @@ void newton(size_t k)
         x_values = {X.front(), X[90], X.back()};
         y_values = {Y.front(), Y[90], Y.back()};
     }
-    if (k == 5)
+    else if (k == 5)
     {
         x_values = {X.front(), X[50], X[100], X[150], X.back()};
         y_values = {Y.front(), Y[50], Y[100], Y[150], Y.back()};
     }
-    if (k == 8)
+    else if (k == 8)
     {
         x_values = {X.front(), X[25], X[50], X[75], X[100], X[125], X[150], X.back()};
         y_values = {Y.front(), Y[25], Y[50], Y[75], Y[100], Y[125], Y[150], Y.back()};
+    }
+    else if (k == 10)
+    {
+        x_values = {X.front(), X[10], X[25], X[35], X[50], X[60], X[70], X[75], X[90], X[100], X[125], X[145], X[160], X[170], X[175], X.back()};
+        y_values = {Y.front(), Y[10], Y[25], Y[35], Y[50], Y[60], Y[70], Y[75], Y[90], Y[100], Y[125], Y[145], Y[160], Y[170], Y[175], Y.back()};
     }
     auto newtonFunc = create_Newton_polynomial(x_values, y_values);
     std::vector<double> new_Y;
@@ -124,8 +129,8 @@ void newton(size_t k)
     Drawer d{
         [&](Plot2D &plot)
         {
-            plot.xlabel("x (мм)");
-            plot.ylabel("y (мм)");
+            plot.xlabel("x (мм)").fontSize(14);
+            plot.ylabel("y (мм)").fontSize(14);
             plot.drawCurve(X, Y).label("Оригинальная функция");
             plot.drawCurve(X, new_Y).label("Итог Интерполяции");
             plot.drawPoints(x_values, y_values).label("Точки интерполяции").pointSize(1).pointType(7);
@@ -203,8 +208,8 @@ void lagranzh(size_t k)
     Drawer d{
         [&](Plot2D &plot)
         {
-            plot.xlabel("x (мм)");
-            plot.ylabel("y (мм)");
+            plot.xlabel("x (мм)").fontSize(14);
+            plot.ylabel("y (мм)").fontSize(14);
             plot.drawCurve(X, Y).label("Оригинальная функция");
             plot.drawCurve(X, new_Y).label("Итог Интерполяции");
             plot.drawPoints(x_values, y_values).label("Точки интерполяции").pointSize(1).pointType(7);
@@ -337,8 +342,8 @@ void approx(size_t K)
     Drawer d{
         [&](Plot2D &plot)
         {
-            plot.xlabel("x (мм)");
-            plot.ylabel("y (мм)");
+            plot.xlabel("x (мм)").fontSize(14);
+            plot.ylabel("y (мм)").fontSize(14);
             plot.drawCurve(X, Y).label("Оригинальная функция");
             plot.drawCurve(X, new_Y).label("Итог Аппроксимации");
         },
@@ -444,8 +449,8 @@ void spline()
     Drawer d{
         [&](Plot2D &plot)
         {
-            plot.xlabel("x (мм)");
-            plot.ylabel("y (мм)");
+            plot.xlabel("x (мм)").fontSize(14);
+            plot.ylabel("y (мм)").fontSize(14);
             plot.drawCurve(X, Y).label("Оригинальная функция");
             plot.drawCurve(X, new_Y).label("Итог Интерполяции");
             plot.drawPoints(x_values, y_values).label("Точки интерполяции").pointSize(1).pointType(7);
@@ -500,8 +505,8 @@ void diff()
         Drawer d{
             [&](Plot2D &plot)
             {
-                plot.xlabel("x (мм)");
-                plot.ylabel("y (мм)");
+            plot.xlabel("x (мм)").fontSize(14);
+            plot.ylabel("y (мм)").fontSize(14);
                 plot.drawCurve(rightx, righty).label("Разностное отношение вперёд");
             },
             [](Canvas &canvas)
@@ -514,8 +519,8 @@ void diff()
         Drawer d{
             [&](Plot2D &plot)
             {
-                plot.xlabel("x (мм)");
-                plot.ylabel("y (мм)");
+            plot.xlabel("x (мм)").fontSize(14);
+            plot.ylabel("y (мм)").fontSize(14);
                 plot.drawCurve(leftx, lefty).label("Разностное отношение назад");
             },
             [](Canvas &canvas)
@@ -528,8 +533,8 @@ void diff()
         Drawer d{
             [&](Plot2D &plot)
             {
-                plot.xlabel("x (мм)");
-                plot.ylabel("y (мм)");
+            plot.xlabel("x (мм)").fontSize(14);
+            plot.ylabel("y (мм)").fontSize(14);
                 plot.drawCurve(centrex, centrey).label("Центральное разностное отношение");
             },
             [](Canvas &canvas)
@@ -542,8 +547,8 @@ void diff()
         Drawer d{
             [&](Plot2D &plot)
             {
-                plot.xlabel("x (мм)");
-                plot.ylabel("y (мм)");
+            plot.xlabel("x (мм)").fontSize(14);
+            plot.ylabel("y (мм)").fontSize(14);
                 plot.drawCurve(diff2x, diff2y).label("Вторая производная");
             },
             [](Canvas &canvas)
@@ -556,8 +561,8 @@ void diff()
         Drawer d{
             [&](Plot2D &plot)
             {
-                plot.xlabel("x (мм)");
-                plot.ylabel("y (мм)");
+            plot.xlabel("x (мм)").fontSize(14);
+            plot.ylabel("y (мм)").fontSize(14);
                 plot.drawCurve(rightx, righty).label("Разностное отношение вперёд");
                 plot.drawCurve(leftx, lefty).label("Разностное отношение назад");
                 plot.drawCurve(centrex, centrey).label("Центральное разностное отношение");
@@ -740,8 +745,8 @@ void mathModel()
         Drawer d{
             [&](Plot2D &plot)
             {
-                plot.xlabel("x (мм)");
-                plot.ylabel("y (мм/сек)");
+            plot.xlabel("x (мм)").fontSize(14);
+            plot.ylabel("y (мм)").fontSize(14);
                 plot.drawCurve(X, newY).label("Оригинальная кривая");
                 plot.drawCurve(X, Vx).label("Зависимость скорости от координаты");
             },
@@ -799,8 +804,8 @@ void mathModel()
                 {
                     std::vector<double> Xtemp = {di};
                     std::vector<double> Ytemp = {interpolate(spline, di)};
-                    plot.xlabel("x (мм)");
-                    plot.ylabel("y (мм)");
+                    plot.xlabel("x (мм)").fontSize(14);
+                    plot.ylabel("y (мм)").fontSize(14);
                     plot.drawCurve(X, newY).label("Оригинальная функция");
                     plot.drawPoints(Xtemp, Ytemp).label("Материальная точка").pointSize(1).pointType(7);
                 },
@@ -826,8 +831,8 @@ void mathModel()
             Drawer d{
                 [&](Plot2D &plot)
                 {
-                    plot.xlabel("x (сек)");
-                    plot.ylabel("y (мм/сек)");
+                    plot.xlabel("x (сек)").fontSize(14);
+                    plot.ylabel("y (мм/сек)").fontSize(14);
                     plot.drawCurve(t, Vt).label("Зависимость скорости от времени");
                 },
                 [](Canvas &canvas)
@@ -871,12 +876,16 @@ int main()
                    { lagranzh(5); }}},
         {{L"L8"}, {L"Интерполяция Лагранжа по 8 точкам", []()
                    { lagranzh(8); }}},
+        {{L"L10"}, {L"Интерполяция Лагранжа по 10 точкам", []()
+                   { lagranzh(10); }}},
         {{L"N3"}, {L"Интерполяция Ньютона по 3 точкам", []()
                    { newton(3); }}},
         {{L"N5"}, {L"Интерполяция Ньютона по 5 точкам", []()
                    { newton(5); }}},
         {{L"N8"}, {L"Интерполяция Ньютона по 8 точкам", []()
                    { newton(8); }}},
+        {{L"N10"}, {L"Интерполяция Ньютона по 10 точкам", []()
+                   { newton(10); }}},
         {{L"q"}, {L"Выход", []()
                   { exit(0); }}},
     };

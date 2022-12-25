@@ -207,6 +207,8 @@ inline auto Canvas::show() const -> void
     // Open script file and truncate it
     std::ofstream script(m_scriptfilename);
     script << "set encoding utf8" << std::endl;
+    script << "set key font \",14\""<< std::endl;
+    script << "set tics font \", 14\""<< std::endl;
     // Add palette info. Use default palette if the user hasn't set one
     gnuplot::palettecmd(script, m_defaultPalette.empty() ? internal::SCIPLOT_DEFAULT_PALETTE : m_defaultPalette);
     // Add terminal info
@@ -246,6 +248,9 @@ inline auto Canvas::save(const std::string& filename) const -> void
     auto extension = cleanedfilename.substr(cleanedfilename.rfind(".") + 1);
     // Open script file
     std::ofstream script(m_scriptfilename);
+    script << "set encoding utf8" << std::endl;
+    script << "set key font \",14\""<< std::endl;
+    script << "set tics font \", 14\""<< std::endl;
     // Add palette info. Use default palette if the user hasn't set one
     gnuplot::palettecmd(script, m_defaultPalette.empty() ? internal::SCIPLOT_DEFAULT_PALETTE : m_defaultPalette);
     // Add terminal info including output size
