@@ -239,8 +239,8 @@ void approx(size_t _K)
     std::vector<double> a, b, x, y;
     std::vector<std::vector<double>> sums;
 
-    x = {X.front(), X[7], X[20], X[45], X[75], X[100], X[125], X[135], X[145], X[150], X[165], X[175], X.back()};
-    y = {Y.front(), Y[7], Y[20], Y[45], Y[75], Y[100], Y[125], Y[135], Y[145], Y[150], Y[165], Y[175], Y.back()};
+    x = {X.front(), X[8], X[25], X[35], X[50], X[60], X[70], X[75], X[90], X[100], X[125], X[145], X[160], X[170], X[175], X.back()};
+    y = {Y.front(), Y[8], Y[25], Y[35], Y[50], Y[60], Y[70], Y[75], Y[90], Y[100], Y[125], Y[145], Y[160], Y[170], Y[175], Y.back()};
     size_t N = x.size();
     {
         // allocate memory for matrixes
@@ -448,8 +448,8 @@ void spline()
     std::vector<double> x_values;
     std::vector<double> y_values;
 
-    x_values = {X.front(), X[25], X[50], X[75], X[100], X[125], X[150], X.back()};
-    y_values = {Y.front(), Y[25], Y[50], Y[75], Y[100], Y[125], Y[150], Y.back()};
+    x_values = {X.front(), X[15], X[25], X[35], X[50], X[60], X[70], X[75], X[90], X[100], X[125], X[145], X[160], X[170], X[175], X.back()};
+    y_values = {Y.front(), Y[15], Y[25], Y[35], Y[50], Y[60], Y[70], Y[75], Y[90], Y[100], Y[125], Y[145], Y[160], Y[170], Y[175], Y.back()};
 
     auto spline = buildSpline(x_values, y_values, x_values.size());
 
