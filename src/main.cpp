@@ -29,7 +29,7 @@ struct Drawer
         Figure fig = {{plot}};
         Canvas canvas = {{fig}};
         canvasFunctions(canvas);
-        canvas.size(1024, 800);
+        canvas.size(1024, 600);
         if (show)
         {
             canvas.show();
@@ -448,8 +448,8 @@ void spline()
     std::vector<double> x_values;
     std::vector<double> y_values;
 
-    x_values = {X.front(), X[15], X[25], X[35], X[50], X[60], X[70], X[75], X[90], X[100], X[125], X[145], X[160], X[170], X[175], X.back()};
-    y_values = {Y.front(), Y[15], Y[25], Y[35], Y[50], Y[60], Y[70], Y[75], Y[90], Y[100], Y[125], Y[145], Y[160], Y[170], Y[175], Y.back()};
+    x_values = {X.front(), X[15], X[25], X[50], X[75], X[100], X[125], X[160], X[170], X.back()};
+    y_values = {Y.front(), Y[15], Y[25], Y[50], Y[75], Y[100], Y[125], Y[160], Y[170], Y.back()};
 
     auto spline = buildSpline(x_values, y_values, x_values.size());
 
