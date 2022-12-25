@@ -116,8 +116,8 @@ void newton(size_t k)
     }
     else if (k == 10)
     {
-        x_values = {X.front(), X[10], X[25], X[35], X[50], X[60], X[70], X[75], X[90], X[100], X[125], X[145], X[160], X[170], X[175], X.back()};
-        y_values = {Y.front(), Y[10], Y[25], Y[35], Y[50], Y[60], Y[70], Y[75], Y[90], Y[100], Y[125], Y[145], Y[160], Y[170], Y[175], Y.back()};
+        x_values = {X.front(), X[8],X[44], X[65], X[85], X[105], X[130], X[160],X[170], X.back()};
+        y_values = {Y.front(), Y[8],Y[44], Y[65], Y[85], Y[105], Y[130], Y[160],Y[170], Y.back()};
     }
     auto newtonFunc = create_Newton_polynomial(x_values, y_values);
     std::vector<double> new_Y;
@@ -188,15 +188,20 @@ void lagranzh(size_t k)
         x_values = {X.front(), X[90], X.back()};
         y_values = {Y.front(), Y[90], Y.back()};
     }
-    if (k == 5)
+    else if (k == 5)
     {
         x_values = {X.front(), X[50], X[100], X[150], X.back()};
         y_values = {Y.front(), Y[50], Y[100], Y[150], Y.back()};
     }
-    if (k == 8)
+    else if (k == 8)
     {
         x_values = {X.front(), X[25], X[50], X[75], X[100], X[125], X[150], X.back()};
         y_values = {Y.front(), Y[25], Y[50], Y[75], Y[100], Y[125], Y[150], Y.back()};
+    }
+    else if (k == 10)
+    {
+        x_values = {X.front(), X[8],X[44], X[65], X[85], X[105], X[130], X[160],X[170], X.back()};
+        y_values = {Y.front(), Y[8],Y[44], Y[65], Y[85], Y[105], Y[130], Y[160],Y[170], Y.back()};
     }
     auto larganzhFunc = create_Lagrange_polynomial(x_values, y_values);
     std::vector<double> new_Y;
@@ -221,13 +226,21 @@ void lagranzh(size_t k)
     d.draw();
 }
 
-void approx(size_t K)
+void approx(size_t _K)
 {
+    size_t K;
+    if(_K==0){
+        std::wcout << L"Введите K = " << std::endl;
+        std::wcin >> K;
+    }
+    else {
+        K = _K;
+    }
     std::vector<double> a, b, x, y;
     std::vector<std::vector<double>> sums;
 
-    x = {X.front(), X[25], X[50], X[75], X[85], X[100], X[125], X[135], X[145], X[150], X[165], X[175], X.back()};
-    y = {Y.front(), Y[25], Y[50], Y[75], Y[85], Y[100], Y[125], Y[135], Y[145], Y[150], Y[165], Y[175], Y.back()};
+    x = {X.front(), X[7], X[20], X[45], X[75], X[100], X[125], X[135], X[145], X[150], X[165], X[175], X.back()};
+    y = {Y.front(), Y[7], Y[20], Y[45], Y[75], Y[100], Y[125], Y[135], Y[145], Y[150], Y[165], Y[175], Y.back()};
     size_t N = x.size();
     {
         // allocate memory for matrixes
@@ -692,10 +705,12 @@ void mathModel()
     double x0;
     std::wcout << L"Введите Xo = " << std::endl;
     std::wcin >> x0;
+    std::wcout << L"Введите μ = " << std::endl;
+    auto mu = 0.4f;
+    std::wcin >> mu;
 
     auto dt = 0.1f;
     auto g = 9.8f;
-    auto mu = 0.4f;
     auto V = 0.0f;
     auto Vt = std::vector<double>{};
     auto Vx = std::vector<double>(X.size(), 0);
@@ -858,10 +873,8 @@ int main()
                   { origin(); }}},
         {{L"A2"}, {L"Аппроксимация методом наименьших квадратов для параболы", []()
                    { approx(2); }}},
-        {{L"A3"}, {L"Аппроксимация методом наименьших квадратов для кубики", []()
-                   { approx(3); }}},
-        {{L"A5"}, {L"Аппроксимация методом наименьших квадратов для полинома пятой степени", []()
-                   { approx(5); }}},
+        {{L"A"}, {L"Аппроксимация методом наименьших квадратов для полинома K-ой степени", []()
+                   { approx(0); }}},
         {{L"S"}, {L"Аппроксимация Сплайнами", []()
                   { spline(); }}},
         {{L"D"}, {L"Дифференцирование", []()
