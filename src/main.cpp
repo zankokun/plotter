@@ -25,11 +25,11 @@ struct Drawer
     {
         Plot2D plot;
         drawFunctions(plot);
-        plot.legend().atOutsideBottomLeft().displayHorizontal().displayExpandWidthBy(10);
+        plot.legend().atOutsideBottomLeft().displayHorizontal().displayExpandWidthBy(10).displayExpandHeightBy(5);
         Figure fig = {{plot}};
         Canvas canvas = {{fig}};
         canvasFunctions(canvas);
-        canvas.size(1200, 800);
+        canvas.size(1024, 800);
         if (show)
         {
             canvas.show();
@@ -116,8 +116,8 @@ void newton(size_t k)
     }
     else if (k == 10)
     {
-        x_values = {X.front(), X[8],X[44], X[65], X[85], X[105], X[130], X[160],X[170], X.back()};
-        y_values = {Y.front(), Y[8],Y[44], Y[65], Y[85], Y[105], Y[130], Y[160],Y[170], Y.back()};
+        x_values = {X.front(), X[8],X[34], X[65], X[85], X[105], X[130], X[160],X[170], X.back()};
+        y_values = {Y.front(), Y[8],Y[34], Y[65], Y[85], Y[105], Y[130], Y[160],Y[170], Y.back()};
     }
     auto newtonFunc = create_Newton_polynomial(x_values, y_values);
     std::vector<double> new_Y;
@@ -200,8 +200,8 @@ void lagranzh(size_t k)
     }
     else if (k == 10)
     {
-        x_values = {X.front(), X[8],X[44], X[65], X[85], X[105], X[130], X[160],X[170], X.back()};
-        y_values = {Y.front(), Y[8],Y[44], Y[65], Y[85], Y[105], Y[130], Y[160],Y[170], Y.back()};
+        x_values = {X.front(), X[8],X[34], X[65], X[85], X[105], X[130], X[160],X[170], X.back()};
+        y_values = {Y.front(), Y[8],Y[34], Y[65], Y[85], Y[105], Y[130], Y[160],Y[170], Y.back()};
     }
     auto larganzhFunc = create_Lagrange_polynomial(x_values, y_values);
     std::vector<double> new_Y;
@@ -230,7 +230,7 @@ void approx(size_t _K)
 {
     size_t K;
     if(_K==0){
-        std::wcout << L"Введите K = " << std::endl;
+        std::wcout << L"Введите степень полинома K ( < 16) = " << std::endl;
         std::wcin >> K;
     }
     else {
