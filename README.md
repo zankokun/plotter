@@ -14,6 +14,7 @@ Open a console in some directory and then:
 ```
 git clone https://github.com/zankokun/plotter.git
 cd plotter
+git checkout only_square_method
 mkdir build
 cd build
 cmake ..
