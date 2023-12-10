@@ -4,8 +4,8 @@
 
 - git: https://git-scm.com/downloads
 - CMake: https://cmake.org/download/
-- gnuplot: http://tmacchant33.starfree.jp/gnuplot_files/gp550-20221210-win64-mingw.zip
-  - Need to unpack somewhere and then add `bin` directory to PATH manually
+- gnuplot: https://sourceforge.net/projects/gnuplot/files/latest/download
+  - Need to install add choose "adding to PATH" option
 - ffmpeg: https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip
   - Need to unpack somewhere and then add `bin` directory to PATH manually
 
