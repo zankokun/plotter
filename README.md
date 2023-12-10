@@ -5,9 +5,7 @@
 - git: https://git-scm.com/downloads
 - CMake: https://cmake.org/download/
 - gnuplot: https://sourceforge.net/projects/gnuplot/files/latest/download
-  - Need to install add choose "adding to PATH" option
-- ffmpeg: https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip
-  - Need to unpack somewhere and then add `bin` directory to PATH manually
+  - Need to install add choose "adding to PATH" option during installation(!!!)
 
 Make sure that PATH knows about all required tools above.
 
